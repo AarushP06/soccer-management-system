@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: soccer-management-system
+  profiles:
+    default: local
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+football-data:
+  base-url: https://api.football-data.org/v4
+  api-token: ${FOOTBALL_DATA_API_TOKEN:demo-token}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
