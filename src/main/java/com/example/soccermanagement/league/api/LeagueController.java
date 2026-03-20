@@ -4,6 +4,7 @@ import com.example.soccermanagement.league.api.dto.CreateLeagueRequest;
 import com.example.soccermanagement.league.api.dto.UpdateLeagueRequest;
 import com.example.soccermanagement.league.api.dto.LeagueResponse;
 import com.example.soccermanagement.league.application.LeagueApplicationService;
+import com.example.soccermanagement.league.application.LeagueImportService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,11 @@ import java.util.UUID;
 public class LeagueController {
 
     private final LeagueApplicationService service;
+    private final LeagueImportService importService;
 
-    public LeagueController(LeagueApplicationService service) {
+    public LeagueController(LeagueApplicationService service, LeagueImportService importService) {
         this.service = service;
+        this.importService = importService;
     }
 
     @GetMapping
@@ -35,6 +38,11 @@ public class LeagueController {
     @PostMapping
     public ResponseEntity<LeagueResponse> create(@Valid @RequestBody CreateLeagueRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
+    }
+
+    @PostMapping("/import/competition/{code}")
+    public ResponseEntity<LeagueResponse> importCompetition(@PathVariable String code) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(importService.importCompetition(code));
     }
 
     @PutMapping("/{id}")

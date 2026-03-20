@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
 public interface SpringDataTeamRepository extends JpaRepository<TeamJpaEntity, UUID> {
+    boolean existsByName(String name);
 }

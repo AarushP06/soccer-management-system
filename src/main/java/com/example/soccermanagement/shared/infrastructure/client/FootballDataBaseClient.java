@@ -21,4 +21,20 @@ public class FootballDataBaseClient {
     public String get(String uri) {
         return restClient.get().uri(uri).retrieve().body(String.class);
     }
+
+    public <T> T get(String uri, Class<T> responseType) {
+        return restClient.get()
+                .uri(uri)
+                .retrieve()
+                .body(responseType);
+    }
+
+    public <T> T get(String uri, Class<T> responseType, String pathVariable) {
+        return restClient.get()
+                .uri(uri, pathVariable)
+                .retrieve()
+                .body(responseType);
+    }
 }
+
+    // ...existing code...

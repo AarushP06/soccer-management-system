@@ -2,6 +2,7 @@ package com.example.soccermanagement.match.application;
 
 import com.example.soccermanagement.match.api.MatchController;
 import com.example.soccermanagement.match.api.dto.MatchDetailsResponse;
+import com.example.soccermanagement.match.application.exception.MatchNotFoundException;
 import com.example.soccermanagement.match.application.port.MatchRepository;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -19,7 +20,7 @@ public class MatchOrchestrationService {
     }
 
     public MatchDetailsResponse getMatchDetails(UUID id) {
-        var match = repository.findById(id).orElseThrow(() -> new RuntimeException("Match not found"));
+        var match = repository.findById(id).orElseThrow(() -> new MatchNotFoundException("Match not found"));
 
         MatchDetailsResponse response = new MatchDetailsResponse(
                 match.getId(),

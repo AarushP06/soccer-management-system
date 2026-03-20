@@ -37,6 +37,11 @@ public class TeamRepositoryAdapter implements TeamRepository {
         repository.deleteById(id);
     }
 
+    @Override
+    public boolean existsByName(String name) {
+        return repository.existsByName(name);
+    }
+
     private Team toDomain(TeamJpaEntity entity) {
         return Team.rehydrate(entity.getId(), entity.getName());
     }

@@ -3,7 +3,9 @@ package com.example.soccermanagement.team.api;
 import com.example.soccermanagement.team.api.dto.CreateTeamRequest;
 import com.example.soccermanagement.team.api.dto.UpdateTeamRequest;
 import com.example.soccermanagement.team.api.dto.TeamResponse;
+import com.example.soccermanagement.team.api.dto.TeamImportSummary;
 import com.example.soccermanagement.team.application.TeamApplicationService;
+import com.example.soccermanagement.team.application.TeamImportService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +19,11 @@ import java.util.UUID;
 public class TeamController {
 
     private final TeamApplicationService service;
+    private final TeamImportService importService;
 
-    public TeamController(TeamApplicationService service) {
+    public TeamController(TeamApplicationService service, TeamImportService importService) {
         this.service = service;
+        this.importService = importService;
     }
 
     @GetMapping
@@ -35,6 +39,11 @@ public class TeamController {
     @PostMapping
     public ResponseEntity<TeamResponse> create(@Valid @RequestBody CreateTeamRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
+    }
+
+    @PostMapping("/import/competition/{code}")
+    public ResponseEntity<TeamImportSummary> importTeams(@PathVariable String code) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(importService.importTeamsByCompetitionCode(code));
     }
 
     @PutMapping("/{id}")

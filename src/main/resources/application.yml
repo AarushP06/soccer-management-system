@@ -12,7 +12,7 @@ spring:
 
 football-data:
   base-url: https://api.football-data.org/v4
-  api-token: ${FOOTBALL_DATA_API_TOKEN:demo-token}
+  api-token: ffa4e22865b34b5396c8da9fd68bb360
 
 springdoc:
   swagger-ui:

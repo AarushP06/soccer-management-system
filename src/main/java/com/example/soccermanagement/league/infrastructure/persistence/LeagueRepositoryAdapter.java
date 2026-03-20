@@ -37,6 +37,11 @@ public class LeagueRepositoryAdapter implements LeagueRepository {
         repository.deleteById(id);
     }
 
+    @Override
+    public boolean existsByName(String name) {
+        return repository.existsByName(name);
+    }
+
     private League toDomain(LeagueJpaEntity entity) {
         return League.rehydrate(entity.getId(), entity.getName());
     }
