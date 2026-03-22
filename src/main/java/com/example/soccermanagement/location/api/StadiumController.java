@@ -4,6 +4,7 @@ import com.example.soccermanagement.location.api.dto.CreateStadiumRequest;
 import com.example.soccermanagement.location.api.dto.UpdateStadiumRequest;
 import com.example.soccermanagement.location.api.dto.StadiumResponse;
 import com.example.soccermanagement.location.application.StadiumApplicationService;
+import com.example.soccermanagement.location.application.StadiumImportService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,11 @@ import java.util.UUID;
 public class StadiumController {
 
     private final StadiumApplicationService service;
+    private final StadiumImportService importService;
 
-    public StadiumController(StadiumApplicationService service) {
+    public StadiumController(StadiumApplicationService service, StadiumImportService importService) {
         this.service = service;
+        this.importService = importService;
     }
 
     @GetMapping
@@ -35,6 +38,11 @@ public class StadiumController {
     @PostMapping
     public ResponseEntity<StadiumResponse> create(@Valid @RequestBody CreateStadiumRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
+    }
+
+    @PostMapping("/import/venue/{venueId}")
+    public ResponseEntity<StadiumResponse> importVenue(@PathVariable Integer venueId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(importService.importVenueByVenueId(venueId));
     }
 
     @PutMapping("/{id}")

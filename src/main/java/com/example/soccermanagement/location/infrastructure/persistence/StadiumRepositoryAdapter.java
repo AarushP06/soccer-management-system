@@ -42,6 +42,11 @@ public class StadiumRepositoryAdapter implements StadiumRepository {
         return repository.existsById(id);
     }
 
+    @Override
+    public boolean existsByName(String name) {
+        return repository.existsByName(name);
+    }
+
     private Stadium toDomain(StadiumJpaEntity entity) {
         return Stadium.rehydrate(entity.getId(), entity.getName());
     }

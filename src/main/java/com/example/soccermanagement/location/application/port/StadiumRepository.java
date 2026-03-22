@@ -12,4 +12,5 @@ public interface StadiumRepository {
     Stadium save(Stadium aggregate);
     void deleteById(UUID id);
     boolean existsById(UUID id);
+    boolean existsByName(String name);
 }
