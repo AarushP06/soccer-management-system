@@ -528,5 +528,3 @@ This project is for educational purposes. Feel free to use and modify as needed.
 ## Author
 
 **Aarush Patel** — 2026
-
-For questions or issues, please open an issue on GitHub or contact the maintainers.
