@@ -42,6 +42,11 @@ public class TeamRepositoryAdapter implements TeamRepository {
         return repository.existsByName(name);
     }
 
+    @Override
+    public Optional<Team> findByName(String name) {
+        return repository.findByName(name).map(this::toDomain);
+    }
+
     private Team toDomain(TeamJpaEntity entity) {
         return Team.rehydrate(entity.getId(), entity.getName());
     }

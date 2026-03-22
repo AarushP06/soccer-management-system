@@ -11,4 +11,5 @@ public interface MatchRepository {
     Optional<Match> findById(UUID id);
     Match save(Match match);
     void deleteById(UUID id);
+    boolean existsByLeagueAndTeams(UUID leagueId, UUID homeTeamId, UUID awayTeamId);
 }

@@ -12,4 +12,5 @@ public interface TeamRepository {
     Team save(Team aggregate);
     void deleteById(UUID id);
     boolean existsByName(String name);
+    Optional<Team> findByName(String name);
 }

@@ -3,7 +3,9 @@ package com.example.soccermanagement.match.api;
 import com.example.soccermanagement.match.api.dto.CreateMatchRequest;
 import com.example.soccermanagement.match.api.dto.MatchDetailsResponse;
 import com.example.soccermanagement.match.api.dto.MatchResponse;
+import com.example.soccermanagement.match.api.dto.MatchImportSummary;
 import com.example.soccermanagement.match.application.MatchApplicationService;
+import com.example.soccermanagement.match.application.MatchImportService;
 import com.example.soccermanagement.match.application.MatchOrchestrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -19,13 +21,16 @@ public class MatchController {
 
     private final MatchApplicationService matchApplicationService;
     private final MatchOrchestrationService matchOrchestrationService;
+    private final MatchImportService matchImportService;
 
     public MatchController(
             MatchApplicationService matchApplicationService,
-            MatchOrchestrationService matchOrchestrationService
+            MatchOrchestrationService matchOrchestrationService,
+            MatchImportService matchImportService
     ) {
         this.matchApplicationService = matchApplicationService;
         this.matchOrchestrationService = matchOrchestrationService;
+        this.matchImportService = matchImportService;
     }
 
     @GetMapping
@@ -48,9 +53,20 @@ public class MatchController {
         return ResponseEntity.status(HttpStatus.CREATED).body(matchApplicationService.create(request));
     }
 
+    @PostMapping("/import/competition/{code}")
+    public ResponseEntity<MatchImportSummary> importMatches(
+            @PathVariable String code,
+            @RequestParam UUID stadiumId
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(matchImportService.importMatchesByCompetitionCode(code, stadiumId));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         matchApplicationService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
+
+

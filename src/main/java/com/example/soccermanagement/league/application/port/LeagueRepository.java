@@ -12,4 +12,5 @@ public interface LeagueRepository {
     League save(League aggregate);
     void deleteById(UUID id);
     boolean existsByName(String name);
+    Optional<League> findByName(String name);
 }

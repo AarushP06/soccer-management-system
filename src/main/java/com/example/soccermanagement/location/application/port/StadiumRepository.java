@@ -11,4 +11,5 @@ public interface StadiumRepository {
     Optional<Stadium> findById(UUID id);
     Stadium save(Stadium aggregate);
     void deleteById(UUID id);
+    boolean existsById(UUID id);
 }

@@ -42,6 +42,11 @@ public class LeagueRepositoryAdapter implements LeagueRepository {
         return repository.existsByName(name);
     }
 
+    @Override
+    public Optional<League> findByName(String name) {
+        return repository.findByName(name).map(this::toDomain);
+    }
+
     private League toDomain(LeagueJpaEntity entity) {
         return League.rehydrate(entity.getId(), entity.getName());
     }

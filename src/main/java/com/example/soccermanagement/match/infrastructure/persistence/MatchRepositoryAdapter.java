@@ -37,6 +37,11 @@ public class MatchRepositoryAdapter implements MatchRepository {
         repository.deleteById(id);
     }
 
+    @Override
+    public boolean existsByLeagueAndTeams(UUID leagueId, UUID homeTeamId, UUID awayTeamId) {
+        return repository.existsByLeagueIdAndHomeTeamIdAndAwayTeamId(leagueId, homeTeamId, awayTeamId);
+    }
+
     private Match toDomain(MatchJpaEntity entity) {
         return Match.rehydrate(
                 entity.getId(),
@@ -47,6 +52,8 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 entity.getStatus()
         );
     }
+
+    // ...existing code...
 
     private MatchJpaEntity toJpa(Match match) {
         MatchJpaEntity entity = new MatchJpaEntity();
