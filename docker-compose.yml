@@ -19,6 +19,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       FOOTBALL_DATA_API_TOKEN: ${FOOTBALL_DATA_API_TOKEN}
+      API_FOOTBALL_API_KEY: ${API_FOOTBALL_API_KEY}
     ports:
       - "8080:8080"
 
