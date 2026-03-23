@@ -1,0 +1,17 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+
+
+title System Context Diagram for World of Soccer System
+
+Person(match_manager, "Match Manager", "Match manager of the soccer world")
+Person(player, "Player", "Player of the soccer world")
+
+System(world_of_soccer, "World of Soccer System", "Allows a soccer match to manage teams, venues and leagues  ")
+
+Rel(match_manager, world_of_soccer, "Tracks teams, venues and leagues", "Uses")
+Rel(player, world_of_soccer, "View match status", "Uses")
+
+
+'SHOW_LEGEND()
+@enduml
