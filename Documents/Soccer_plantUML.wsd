@@ -1,17 +1,219 @@
 @startuml
-!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
 
+title Soccer Management System - Phase 1 Domain Model
 
-title System Context Diagram for World of Soccer System
+skinparam backgroundColor white
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam defaultTextAlignment center
+hide empty methods
 
-Person(match_manager, "Match Manager", "Match manager of the soccer world")
-Person(player, "Player", "Player of the soccer world")
+legend right
+  == Legend ==
+  <<Bounded Context>>  Bounded Context / Subdomain
+  <<Aggregate Root>>   Aggregate Root
+  <<Entity>>           Entity
+  <<Value Object>>     Value Object
+endlegend
 
-System(world_of_soccer, "World of Soccer System", "Allows a soccer match to manage teams, venues and leagues  ")
+package "Match Management\n<<Bounded Context>>\nCore / Orchestration" as MM {
 
-Rel(match_manager, world_of_soccer, "Tracks teams, venues and leagues", "Uses")
-Rel(player, world_of_soccer, "View match status", "Uses")
+  package "Aggregate: Match" as MM_MATCH {
+    class Match <<Aggregate Root>> {
+      +matchId: UUID
+      +leagueId: UUID
+      +homeTeamId: UUID
+      +awayTeamId: UUID
+      +stadiumId: UUID
+      +status: MatchStatus
+    }
 
+    class MatchEvent <<Entity>> {
+      +eventId: UUID
+      +minute: int
+      +eventType: String
+      +teamId: UUID
+      +playerName: String
+    }
 
-'SHOW_LEGEND()
+    class ScoreEntry <<Entity>> {
+      +homeGoals: int
+      +awayGoals: int
+    }
+
+    class MatchTime <<Value Object>> {
+      +startDateTime: LocalDateTime
+    }
+
+    class MatchResult <<Value Object>> {
+      +winnerTeamId: UUID
+      +summary: String
+    }
+
+    Match *-- "1" MatchTime
+    Match *-- "0..*" MatchEvent
+    Match *-- "0..1" ScoreEntry
+    Match *-- "0..1" MatchResult
+  }
+
+  note right of Match
+    Invariant:
+    - homeTeamId must be different from awayTeamId
+    - Match cannot be COMPLETED unless a score exists
+  end note
+
+  package "Aggregate: MatchSchedule" as MM_SCHEDULE {
+    class MatchSchedule <<Aggregate Root>> {
+      +scheduleId: UUID
+      +leagueId: UUID
+      +season: String
+      +status: String
+    }
+
+    class ScheduledMatchRef <<Entity>> {
+      +matchId: UUID
+      +roundNumber: int
+    }
+
+    class ScheduleWindow <<Value Object>> {
+      +startDate: LocalDate
+      +endDate: LocalDate
+    }
+
+    MatchSchedule *-- "1" ScheduleWindow
+    MatchSchedule *-- "1..*" ScheduledMatchRef
+  }
+
+  note right of MatchSchedule
+    Invariant:
+    - No duplicate match in the same round
+    - Match must be scheduled inside the season window
+  end note
+}
+
+package "League Management\n<<Bounded Context>>\nSupporting" as LM {
+  package "Aggregate: League" as LM_LEAGUE {
+    class League <<Aggregate Root>> {
+      +leagueId: UUID
+      +name: String
+      +country: String
+      +division: String
+      +active: boolean
+    }
+
+    class SeasonRegistration <<Entity>> {
+      +registrationId: UUID
+      +teamId: UUID
+      +season: String
+      +registeredAt: LocalDate
+    }
+
+    class LeagueRules <<Value Object>> {
+      +maxTeams: int
+      +pointsForWin: int
+      +pointsForDraw: int
+    }
+
+    League *-- "0..*" SeasonRegistration
+    League *-- "1" LeagueRules
+  }
+
+  note right of League
+    Invariant:
+    - Registered teams must not exceed maxTeams
+    - Inactive league cannot accept new registrations
+  end note
+}
+
+package "Team Management\n<<Bounded Context>>\nSupporting" as TM {
+  package "Aggregate: Team" as TM_TEAM {
+    class Team <<Aggregate Root>> {
+      +teamId: UUID
+      +foundedYear: int
+      +status: String
+    }
+
+    class Player <<Entity>> {
+      +playerId: UUID
+      +fullName: String
+      +jerseyNumber: int
+      +position: String
+      +active: boolean
+    }
+
+    class TeamName <<Value Object>> {
+      +shortName: String
+      +fullName: String
+    }
+
+    class CoachInfo <<Value Object>> {
+      +coachName: String
+      +licenseLevel: String
+    }
+
+    Team *-- "1" TeamName
+    Team *-- "1" CoachInfo
+    Team *-- "11..*" Player
+  }
+
+  note right of Team
+    Invariant:
+    - Team must have at least 11 active players
+      to be eligible for official matches
+  end note
+}
+
+package "Location Management\n<<Bounded Context>>\nSupporting" as LOC {
+  package "Aggregate: Stadium" as LOC_STADIUM {
+    class Stadium <<Aggregate Root>> {
+      +stadiumId: UUID
+      +name: String
+      +capacity: int
+      +active: boolean
+    }
+
+    class MaintenanceWindow <<Entity>> {
+      +maintenanceWindowId: UUID
+      +startDateTime: LocalDateTime
+      +endDateTime: LocalDateTime
+      +reason: String
+    }
+
+    class Address <<Value Object>> {
+      +street: String
+      +city: String
+      +country: String
+    }
+
+    class FieldDimensions <<Value Object>> {
+      +lengthMeters: double
+      +widthMeters: double
+    }
+
+    Stadium *-- "1" Address
+    Stadium *-- "1" FieldDimensions
+    Stadium *-- "0..*" MaintenanceWindow
+  }
+
+  note right of Stadium
+    Invariant:
+    - Stadium cannot host a match when inactive
+    - Stadium cannot host a match during maintenance
+  end note
+}
+
+' Cross-context ID references only
+Match ..> League : leagueId
+Match ..> Team : homeTeamId / awayTeamId
+Match ..> Stadium : stadiumId
+MatchSchedule ..> League : leagueId
+SeasonRegistration ..> Team : teamId
+ScheduledMatchRef ..> Match : matchId
+
+' Context communication from core to supporting contexts
+MM ..> LM : validateLeagueAndRegistration()\nAPI / validation
+MM ..> TM : validateTeamEligibility()\nAPI / validation
+MM ..> LOC : validateStadiumAvailability()\nAPI / validation
+
 @enduml
