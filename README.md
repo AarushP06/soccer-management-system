@@ -1,4 +1,4 @@
-# Soccer Management System
+# Soccer Website!
 
 A **DDD modular monolith** Spring Boot 3 application for managing soccer data (teams, leagues, stadiums, matches) with seamless integration of two external APIs: **football-data.org** for competitions and **API-Football** for venues.
 
