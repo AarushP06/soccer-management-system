@@ -9,6 +9,7 @@ import com.example.soccermanagement.match.application.exception.MatchNotFoundExc
 import com.example.soccermanagement.shared.domain.DomainException;
 import com.example.soccermanagement.team.application.exception.TeamConflictException;
 import com.example.soccermanagement.team.application.exception.TeamNotFoundException;
+import com.example.soccermanagement.shared.exception.ExternalApiRateLimitException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +55,11 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<ApiErrorResponse> handleConflict(RuntimeException ex, HttpServletRequest request) {
         return build(HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI(), List.of());
+    }
+
+    @ExceptionHandler(ExternalApiRateLimitException.class)
+    public ResponseEntity<ApiErrorResponse> handleRateLimit(ExternalApiRateLimitException ex, HttpServletRequest request) {
+        return build(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), request.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(Exception.class)

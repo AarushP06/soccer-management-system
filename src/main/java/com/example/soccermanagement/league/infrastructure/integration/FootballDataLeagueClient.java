@@ -17,14 +17,26 @@ public class FootballDataLeagueClient {
 
     public Optional<Competition> getCompetitionByCode(String code) {
         CompetitionsResponse response = client.get("/competitions", CompetitionsResponse.class);
+        if (response == null || response.competitions() == null) {
+            return Optional.empty();
+        }
         return response.competitions().stream()
-                .filter(c -> c.code().equals(code))
+                .filter(c -> c.code() != null && c.code().equalsIgnoreCase(code.trim()))
                 .findFirst();
     }
 
     public List<Team> getTeamsByCompetitionCode(String code) {
-        TeamsResponse response = client.get("/competitions/{code}/teams", TeamsResponse.class, code);
-        return response.teams();
+        if (code == null || code.isBlank()) {
+            return List.of();
+        }
+        String normalizedCode = code.trim();
+        TeamsResponse response = client.get("/competitions/{code}/teams", TeamsResponse.class, normalizedCode);
+        if (response == null || response.teams() == null) {
+            return List.of();
+        }
+        return response.teams().stream()
+                .filter(t -> t != null && t.name() != null && !t.name().isBlank())
+                .toList();
     }
 
     public record CompetitionsResponse(List<Competition> competitions) {

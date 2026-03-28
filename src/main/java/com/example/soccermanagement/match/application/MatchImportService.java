@@ -38,24 +38,35 @@ public class MatchImportService {
     }
     @Transactional
     public MatchImportSummary importMatchesByCompetitionCode(String code, UUID stadiumId) {
+        String normalizedCode = code == null ? "" : code.trim();
         if (!stadiumRepository.existsById(stadiumId)) {
             throw new StadiumNotFoundException("Stadium not found: " + stadiumId);
         }
-        var competition = footballDataLeagueClient.getCompetitionByCode(code)
-                .orElseThrow(() -> new LeagueNotFoundException("Competition not found for code: " + code));
+        var competition = footballDataLeagueClient.getCompetitionByCode(normalizedCode)
+                .orElseThrow(() -> new LeagueNotFoundException("Competition not found for code: " + normalizedCode));
         var leagueOpt = leagueRepository.findByName(competition.name());
         if (leagueOpt.isEmpty()) {
-            return new MatchImportSummary(code, stadiumId, 0, 0, 0, 1);
+            return new MatchImportSummary(normalizedCode, stadiumId, 0, 0, 0, 1);
         }
         UUID leagueId = leagueOpt.get().getId();
-        List<FootballDataMatchClient.ExternalMatch> externalMatches = footballDataMatchClient.getMatchesByCompetitionCode(code);
+        List<FootballDataMatchClient.ExternalMatch> externalMatches = footballDataMatchClient.getMatchesByCompetitionCode(normalizedCode);
         int imported = 0;
         int skipped = 0;
         int missingTeams = 0;
         int missingLeague = 0;
         for (FootballDataMatchClient.ExternalMatch externalMatch : externalMatches) {
-            String homeTeamName = externalMatch.homeTeam().name();
-            String awayTeamName = externalMatch.awayTeam().name();
+            if (externalMatch == null
+                    || externalMatch.homeTeam() == null
+                    || externalMatch.awayTeam() == null
+                    || externalMatch.homeTeam().name() == null
+                    || externalMatch.awayTeam().name() == null
+                    || externalMatch.homeTeam().name().isBlank()
+                    || externalMatch.awayTeam().name().isBlank()) {
+                skipped++;
+                continue;
+            }
+            String homeTeamName = externalMatch.homeTeam().name().trim();
+            String awayTeamName = externalMatch.awayTeam().name().trim();
             var homeTeam = teamRepository.findByName(homeTeamName);
             if (homeTeam.isEmpty()) {
                 missingTeams++;
@@ -74,14 +85,10 @@ public class MatchImportService {
                 skipped++;
                 continue;
             }
-            try {
-                Match match = Match.create(leagueId, homeTeamId, awayTeamId, stadiumId);
-                matchRepository.save(match);
-                imported++;
-            } catch (Exception ex) {
-                skipped++;
-            }
+            Match match = Match.create(leagueId, homeTeamId, awayTeamId, stadiumId);
+            matchRepository.save(match);
+            imported++;
         }
-        return new MatchImportSummary(code, stadiumId, imported, skipped, missingTeams, missingLeague);
+        return new MatchImportSummary(normalizedCode, stadiumId, imported, skipped, missingTeams, missingLeague);
     }
 }

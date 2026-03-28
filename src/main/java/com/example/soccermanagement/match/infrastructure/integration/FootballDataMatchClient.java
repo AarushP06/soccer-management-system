@@ -9,8 +9,19 @@ public class FootballDataMatchClient {
         this.client = client;
     }
     public List<ExternalMatch> getMatchesByCompetitionCode(String code) {
-        MatchesResponse response = client.get("/competitions/{code}/matches", MatchesResponse.class, code);
-        return response.matches();
+        if (code == null || code.isBlank()) {
+            return List.of();
+        }
+        String normalizedCode = code.trim();
+        MatchesResponse response = client.get("/competitions/{code}/matches", MatchesResponse.class, normalizedCode);
+        if (response == null || response.matches() == null) {
+            return List.of();
+        }
+        return response.matches().stream()
+                .filter(m -> m != null
+                        && m.homeTeam() != null && m.homeTeam().name() != null && !m.homeTeam().name().isBlank()
+                        && m.awayTeam() != null && m.awayTeam().name() != null && !m.awayTeam().name().isBlank())
+                .toList();
     }
     public record MatchesResponse(List<ExternalMatch> matches) {
     }
