@@ -40,13 +40,30 @@ public class MatchApplicationService {
     }
 
     public List<MatchResponse> getAll() {
-        return repository.findAll().stream().map(MatchApiMapper::toResponse).toList();
+        return repository.findAll().stream().map(match -> {
+            String leagueName = leagueLookupPort.findNameById(match.getLeagueId()).orElse(null);
+            String externalLeagueCode = leagueLookupPort.findExternalCodeById(match.getLeagueId()).orElse(null);
+            String homeName = teamLookupPort.findNameById(match.getHomeTeamId()).orElse(null);
+            String externalHomeId = teamLookupPort.findExternalIdById(match.getHomeTeamId()).orElse(null);
+            String awayName = teamLookupPort.findNameById(match.getAwayTeamId()).orElse(null);
+            String externalAwayId = teamLookupPort.findExternalIdById(match.getAwayTeamId()).orElse(null);
+            String stadiumName = stadiumLookupPort.findNameById(match.getStadiumId()).orElse(null);
+            Integer externalVenueId = stadiumLookupPort.findExternalVenueIdById(match.getStadiumId()).orElse(null);
+            return MatchApiMapper.toResponse(match, match.getExternalMatchId(), leagueName, externalLeagueCode, homeName, externalHomeId, awayName, externalAwayId, stadiumName, externalVenueId);
+        }).toList();
     }
 
     public MatchResponse getOne(UUID id) {
-        return repository.findById(id)
-                .map(MatchApiMapper::toResponse)
-                .orElseThrow(() -> new MatchNotFoundException("Match not found"));
+        Match match = repository.findById(id).orElseThrow(() -> new MatchNotFoundException("Match not found"));
+        String leagueName = leagueLookupPort.findNameById(match.getLeagueId()).orElse(null);
+        String externalLeagueCode = leagueLookupPort.findExternalCodeById(match.getLeagueId()).orElse(null);
+        String homeName = teamLookupPort.findNameById(match.getHomeTeamId()).orElse(null);
+        String externalHomeId = teamLookupPort.findExternalIdById(match.getHomeTeamId()).orElse(null);
+        String awayName = teamLookupPort.findNameById(match.getAwayTeamId()).orElse(null);
+        String externalAwayId = teamLookupPort.findExternalIdById(match.getAwayTeamId()).orElse(null);
+        String stadiumName = stadiumLookupPort.findNameById(match.getStadiumId()).orElse(null);
+        Integer externalVenueId = stadiumLookupPort.findExternalVenueIdById(match.getStadiumId()).orElse(null);
+        return MatchApiMapper.toResponse(match, match.getExternalMatchId(), leagueName, externalLeagueCode, homeName, externalHomeId, awayName, externalAwayId, stadiumName, externalVenueId);
     }
 
     public MatchResponse create(CreateMatchRequest request) {
@@ -62,7 +79,16 @@ public class MatchApplicationService {
 
         try {
             Match match = Match.create(request.leagueId(), request.homeTeamId(), request.awayTeamId(), request.stadiumId());
-            return MatchApiMapper.toResponse(repository.save(match));
+            Match saved = repository.save(match);
+            String leagueName = leagueLookupPort.findNameById(saved.getLeagueId()).orElse(null);
+            String externalLeagueCode = leagueLookupPort.findExternalCodeById(saved.getLeagueId()).orElse(null);
+            String homeName = teamLookupPort.findNameById(saved.getHomeTeamId()).orElse(null);
+            String externalHomeId = teamLookupPort.findExternalIdById(saved.getHomeTeamId()).orElse(null);
+            String awayName = teamLookupPort.findNameById(saved.getAwayTeamId()).orElse(null);
+            String externalAwayId = teamLookupPort.findExternalIdById(saved.getAwayTeamId()).orElse(null);
+            String stadiumName = stadiumLookupPort.findNameById(saved.getStadiumId()).orElse(null);
+            Integer externalVenueId = stadiumLookupPort.findExternalVenueIdById(saved.getStadiumId()).orElse(null);
+            return MatchApiMapper.toResponse(saved, saved.getExternalMatchId(), leagueName, externalLeagueCode, homeName, externalHomeId, awayName, externalAwayId, stadiumName, externalVenueId);
         } catch (DataIntegrityViolationException ex) {
             throw new MatchConflictException("Match conflict: duplicate or invalid state");
         }

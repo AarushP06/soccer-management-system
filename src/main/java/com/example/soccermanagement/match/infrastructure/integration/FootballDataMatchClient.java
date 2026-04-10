@@ -26,10 +26,11 @@ public class FootballDataMatchClient {
     public record MatchesResponse(List<ExternalMatch> matches) {
     }
     public record ExternalMatch(
+            String id,
             Team homeTeam,
             Team awayTeam
     ) {
     }
-    public record Team(String name) {
+    public record Team(String name, String id) {
     }
 }

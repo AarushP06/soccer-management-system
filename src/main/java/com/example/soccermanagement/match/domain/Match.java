@@ -11,9 +11,10 @@ public class Match {
     private final UUID homeTeamId;
     private final UUID awayTeamId;
     private final UUID stadiumId;
+    private final String externalMatchId; // optional external match id
     private String status;
 
-    private Match(UUID id, UUID leagueId, UUID homeTeamId, UUID awayTeamId, UUID stadiumId, String status) {
+    private Match(UUID id, UUID leagueId, UUID homeTeamId, UUID awayTeamId, UUID stadiumId, String externalMatchId, String status) {
         if (homeTeamId.equals(awayTeamId)) {
             throw new DomainException("Home team and away team must be different");
         }
@@ -22,15 +23,24 @@ public class Match {
         this.homeTeamId = homeTeamId;
         this.awayTeamId = awayTeamId;
         this.stadiumId = stadiumId;
+        this.externalMatchId = externalMatchId;
         this.status = status;
     }
 
     public static Match create(UUID leagueId, UUID homeTeamId, UUID awayTeamId, UUID stadiumId) {
-        return new Match(UUID.randomUUID(), leagueId, homeTeamId, awayTeamId, stadiumId, "SCHEDULED");
+        return new Match(UUID.randomUUID(), leagueId, homeTeamId, awayTeamId, stadiumId, null, "SCHEDULED");
+    }
+
+    public static Match createFromExternal(UUID leagueId, UUID homeTeamId, UUID awayTeamId, UUID stadiumId, String externalMatchId) {
+        return new Match(UUID.randomUUID(), leagueId, homeTeamId, awayTeamId, stadiumId, externalMatchId, "SCHEDULED");
     }
 
     public static Match rehydrate(UUID id, UUID leagueId, UUID homeTeamId, UUID awayTeamId, UUID stadiumId, String status) {
-        return new Match(id, leagueId, homeTeamId, awayTeamId, stadiumId, status);
+        return new Match(id, leagueId, homeTeamId, awayTeamId, stadiumId, null, status);
+    }
+
+    public static Match rehydrate(UUID id, UUID leagueId, UUID homeTeamId, UUID awayTeamId, UUID stadiumId, String externalMatchId, String status) {
+        return new Match(id, leagueId, homeTeamId, awayTeamId, stadiumId, externalMatchId, status);
     }
 
     public UUID getId() {
@@ -55,5 +65,9 @@ public class Match {
 
     public String getStatus() {
         return status;
+    }
+
+    public String getExternalMatchId() {
+        return externalMatchId;
     }
 }

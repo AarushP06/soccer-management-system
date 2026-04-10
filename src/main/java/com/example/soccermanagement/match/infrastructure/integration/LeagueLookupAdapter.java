@@ -4,6 +4,7 @@ import com.example.soccermanagement.league.infrastructure.persistence.SpringData
 import com.example.soccermanagement.match.application.port.LeagueLookupPort;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -18,5 +19,15 @@ public class LeagueLookupAdapter implements LeagueLookupPort {
     @Override
     public boolean existsById(UUID leagueId) {
         return repository.existsById(leagueId);
+    }
+
+    @Override
+    public Optional<String> findNameById(UUID leagueId) {
+        return repository.findById(leagueId).map(e -> e.getName());
+    }
+
+    @Override
+    public Optional<String> findExternalCodeById(UUID leagueId) {
+        return repository.findById(leagueId).map(e -> e.getExternalCode());
     }
 }

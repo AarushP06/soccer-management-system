@@ -41,13 +41,15 @@ public class TeamImportService {
             }
 
             String teamName = externalTeam.name().trim();
+            String externalId = null;
+            try { externalId = externalTeam.id(); } catch (Exception ignore) { }
 
             if (repository.existsByName(teamName)) {
                 skipped++;
                 continue;
             }
 
-            repository.save(Team.create(teamName));
+            repository.save(Team.createFromExternal(teamName, externalId));
             imported++;
         }
 

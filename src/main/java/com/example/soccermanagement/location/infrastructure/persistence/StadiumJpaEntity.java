@@ -13,6 +13,10 @@ public class StadiumJpaEntity {
     @Id
     private UUID id;
     private String name;
+    private Integer externalVenueId; // external API-Football venue id
+    private String city;
+    private String country;
+    private Integer capacity;
 
     public UUID getId() {
         return id;
@@ -28,5 +32,37 @@ public class StadiumJpaEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Integer getExternalVenueId() {
+        return externalVenueId;
+    }
+
+    public void setExternalVenueId(Integer externalVenueId) {
+        this.externalVenueId = externalVenueId;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
     }
 }

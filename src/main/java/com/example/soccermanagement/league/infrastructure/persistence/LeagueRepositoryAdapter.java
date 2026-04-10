@@ -48,13 +48,14 @@ public class LeagueRepositoryAdapter implements LeagueRepository {
     }
 
     private League toDomain(LeagueJpaEntity entity) {
-        return League.rehydrate(entity.getId(), entity.getName());
+        return League.rehydrate(entity.getId(), entity.getName(), entity.getExternalCode());
     }
 
     private LeagueJpaEntity toJpa(League aggregate) {
         LeagueJpaEntity entity = new LeagueJpaEntity();
         entity.setId(aggregate.getId());
         entity.setName(aggregate.getName());
+        entity.setExternalCode(aggregate.getExternalCode());
         return entity;
     }
 }

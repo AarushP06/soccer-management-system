@@ -17,6 +17,7 @@ public class MatchJpaEntity {
     private UUID awayTeamId;
     private UUID stadiumId;
     private String status;
+    private String externalMatchId; // store external match id if available
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
@@ -30,4 +31,6 @@ public class MatchJpaEntity {
     public void setStadiumId(UUID stadiumId) { this.stadiumId = stadiumId; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getExternalMatchId() { return externalMatchId; }
+    public void setExternalMatchId(String externalMatchId) { this.externalMatchId = externalMatchId; }
 }

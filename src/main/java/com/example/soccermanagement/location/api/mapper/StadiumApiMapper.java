@@ -9,6 +9,6 @@ public final class StadiumApiMapper {
     }
 
     public static StadiumResponse toResponse(Stadium aggregate) {
-        return new StadiumResponse(aggregate.getId(), aggregate.getName());
+        return new StadiumResponse(aggregate.getId(), aggregate.getName(), aggregate.getExternalVenueId(), aggregate.getCity(), aggregate.getCountry(), aggregate.getCapacity());
     }
 }

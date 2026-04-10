@@ -13,6 +13,7 @@ public class TeamJpaEntity {
     @Id
     private UUID id;
     private String name;
+    private String externalId; // external team id
 
     public UUID getId() {
         return id;
@@ -28,5 +29,13 @@ public class TeamJpaEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 }

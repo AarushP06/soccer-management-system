@@ -49,11 +49,10 @@ public class MatchRepositoryAdapter implements MatchRepository {
                 entity.getHomeTeamId(),
                 entity.getAwayTeamId(),
                 entity.getStadiumId(),
+                entity.getExternalMatchId(),
                 entity.getStatus()
         );
     }
-
-    // ...existing code...
 
     private MatchJpaEntity toJpa(Match match) {
         MatchJpaEntity entity = new MatchJpaEntity();
@@ -63,6 +62,7 @@ public class MatchRepositoryAdapter implements MatchRepository {
         entity.setAwayTeamId(match.getAwayTeamId());
         entity.setStadiumId(match.getStadiumId());
         entity.setStatus(match.getStatus());
+        entity.setExternalMatchId(match.getExternalMatchId());
         return entity;
     }
 }

@@ -48,13 +48,14 @@ public class TeamRepositoryAdapter implements TeamRepository {
     }
 
     private Team toDomain(TeamJpaEntity entity) {
-        return Team.rehydrate(entity.getId(), entity.getName());
+        return Team.rehydrate(entity.getId(), entity.getName(), entity.getExternalId());
     }
 
     private TeamJpaEntity toJpa(Team aggregate) {
         TeamJpaEntity entity = new TeamJpaEntity();
         entity.setId(aggregate.getId());
         entity.setName(aggregate.getName());
+        entity.setExternalId(aggregate.getExternalId());
         return entity;
     }
 }

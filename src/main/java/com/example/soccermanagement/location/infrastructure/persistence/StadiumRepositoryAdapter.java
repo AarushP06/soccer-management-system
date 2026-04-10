@@ -48,13 +48,17 @@ public class StadiumRepositoryAdapter implements StadiumRepository {
     }
 
     private Stadium toDomain(StadiumJpaEntity entity) {
-        return Stadium.rehydrate(entity.getId(), entity.getName());
+        return Stadium.rehydrate(entity.getId(), entity.getName(), entity.getExternalVenueId(), entity.getCity(), entity.getCountry(), entity.getCapacity());
     }
 
     private StadiumJpaEntity toJpa(Stadium aggregate) {
         StadiumJpaEntity entity = new StadiumJpaEntity();
         entity.setId(aggregate.getId());
         entity.setName(aggregate.getName());
+        entity.setExternalVenueId(aggregate.getExternalVenueId());
+        entity.setCity(aggregate.getCity());
+        entity.setCountry(aggregate.getCountry());
+        entity.setCapacity(aggregate.getCapacity());
         return entity;
     }
 }

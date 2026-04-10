@@ -28,13 +28,13 @@ public class LeagueImportService {
                 .orElseThrow(() -> new LeagueNotFoundException("Competition not found for code: " + code));
 
         String leagueName = externalCompetition.name();
+        String externalCode = externalCompetition.code();
 
         if (repository.existsByName(leagueName)) {
             throw new LeagueConflictException("League already exists: " + leagueName);
         }
 
-        League saved = repository.save(League.create(leagueName));
+        League saved = repository.save(League.createFromExternal(leagueName, externalCode));
         return LeagueApiMapper.toResponse(saved);
     }
 }
-

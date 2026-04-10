@@ -13,6 +13,7 @@ public class LeagueJpaEntity {
     @Id
     private UUID id;
     private String name;
+    private String externalCode; // stores external competition code
 
     public UUID getId() {
         return id;
@@ -28,5 +29,13 @@ public class LeagueJpaEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getExternalCode() {
+        return externalCode;
+    }
+
+    public void setExternalCode(String externalCode) {
+        this.externalCode = externalCode;
     }
 }

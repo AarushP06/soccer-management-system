@@ -85,7 +85,11 @@ public class MatchImportService {
                 skipped++;
                 continue;
             }
-            Match match = Match.create(leagueId, homeTeamId, awayTeamId, stadiumId);
+            // use external id when available
+            String externalMatchId = null;
+            try { externalMatchId = externalMatch.id(); } catch (Exception ignored) {}
+            Match match = externalMatchId != null ? Match.createFromExternal(leagueId, homeTeamId, awayTeamId, stadiumId, externalMatchId)
+                    : Match.create(leagueId, homeTeamId, awayTeamId, stadiumId);
             matchRepository.save(match);
             imported++;
         }

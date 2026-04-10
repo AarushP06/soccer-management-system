@@ -42,12 +42,14 @@ public class FootballDataLeagueClient {
     public record CompetitionsResponse(List<Competition> competitions) {
     }
 
-    public record Competition(String code, String name) {
+    // include id, code and name where possible
+    public record Competition(String id, String code, String name) {
     }
 
     public record TeamsResponse(List<Team> teams) {
     }
 
-    public record Team(String name) {
+    // include id field for external team id
+    public record Team(String id, String name) {
     }
 }
