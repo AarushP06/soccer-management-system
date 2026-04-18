@@ -1,0 +1,65 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(apiUser, "API Client / User", "Web or mobile client, or external API consumer")
+
+System_Boundary(soccer, "Soccer Management System") {
+  Container(apiGateway, "API Gateway", "Reverse proxy / routing / auth", "Single external entry point; routes requests to downstream services")
+  Container(matchSvc, "Match Service", "Spring Boot\nHATEOAS, Ports, ACL", "Core orchestrator/data aggregator; aggregates league, team and stadium data; imports match data from football-data.org")
+  Container(leagueSvc, "League Service", "Spring Boot", "Owns league domain and data; imports league data from football-data.org")
+  Container(teamSvc, "Team Service", "Spring Boot", "Owns team domain and data; imports team data from football-data.org")
+  Container(stadiumSvc, "Stadium Service", "Spring Boot", "Owns stadium/venue domain and data; imports venue data from API-Football")
+}
+
+ContainerDb(matchDb, "Match PostgreSQL", "PostgreSQL", "Owned by Match Service")
+ContainerDb(leagueDb, "League PostgreSQL", "PostgreSQL", "Owned by League Service")
+ContainerDb(teamDb, "Team PostgreSQL", "PostgreSQL", "Owned by Team Service")
+ContainerDb(stadiumDb, "Stadium PostgreSQL", "PostgreSQL", "Owned by Stadium Service")
+
+System_Ext(fd_org, "football-data.org", "External football data API (league, team, match data)")
+System_Ext(api_football, "API-Football", "External stadium/venue data API")
+
+Rel(apiUser, apiGateway, "Sends requests (all client traffic)", "HTTPS/REST")
+Rel(apiGateway, matchSvc, "Routes Match-related and aggregator requests", "HTTP/REST")
+Rel(apiGateway, leagueSvc, "Routes League-related requests", "HTTP/REST")
+Rel(apiGateway, teamSvc, "Routes Team-related requests", "HTTP/REST")
+Rel(apiGateway, stadiumSvc, "Routes Stadium-related requests", "HTTP/REST")
+
+Rel(matchSvc, leagueSvc, "Lookup / aggregate league data", "HTTP/REST / application ports")
+Rel(matchSvc, teamSvc, "Lookup / aggregate team data", "HTTP/REST / application ports")
+Rel(matchSvc, stadiumSvc, "Lookup / aggregate stadium data", "HTTP/REST / application ports")
+
+Rel(matchSvc, fd_org, "Import external match data from", "REST API")
+Rel(leagueSvc, fd_org, "Import league data from", "REST API")
+Rel(teamSvc, fd_org, "Import team data from", "REST API")
+Rel(stadiumSvc, api_football, "Import stadium/venue data from", "REST API")
+
+Rel(matchSvc, matchDb, "Reads/Writes", "JPA / SQL")
+Rel(leagueSvc, leagueDb, "Reads/Writes", "JPA / SQL")
+Rel(teamSvc, teamDb, "Reads/Writes", "JPA / SQL")
+Rel(stadiumSvc, stadiumDb, "Reads/Writes", "JPA / SQL")
+
+note right of apiGateway
+API Gateway responsibilities:
+- Single external entry point
+- Routing to services
+- Authentication
+- Rate limiting
+end note
+
+note right of matchSvc
+Match Service responsibilities:
+- Orchestrates and aggregates league, team, and stadium data
+- Exposes HATEOAS hypermedia for navigation
+- Implements ports and ACL boundaries
+end note
+
+note bottom of soccer
+Operational modes and deployment:
+- Local dev uses H2 per service
+- Docker Compose uses PostgreSQL
+- Deployment uses 9 Docker containers:
+  5 service containers and 4 PostgreSQL containers
+end note
+
+@enduml
