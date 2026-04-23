@@ -1,27 +1,134 @@
-services:
-  postgres:
-    image: postgres:16
-    container_name: soccer-postgres
-    environment:
-      POSTGRES_DB: soccerdb
-      POSTGRES_USER: soccer
-      POSTGRES_PASSWORD: soccer
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+version: '3.8'
 
-  app:
-    build: .
-    container_name: soccer-app
-    depends_on:
-      - postgres
+services:
+  # PostgreSQL databases for each backend service
+  match-db:
+    image: postgres:16
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      FOOTBALL_DATA_API_TOKEN: ${FOOTBALL_DATA_API_TOKEN}
-      API_FOOTBALL_API_KEY: ${API_FOOTBALL_API_KEY}
+      POSTGRES_DB: matchdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - match_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  league-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: leaguedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - league_db_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  team-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: teamdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - team_db_data:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+  stadium-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: stadiumdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - stadium_db_data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+
+  # Microservice containers
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     ports:
       - "8080:8080"
+    depends_on:
+      - match-service
+      - league-service
+      - team-service
+      - stadium-service
+
+  match-service:
+    build:
+      context: .
+      dockerfile: match-service/Dockerfile
+    environment:
+      DB_HOST: match-db
+      DB_PORT: 5432
+      DB_NAME: matchdb
+      DB_USER: postgres
+      DB_PASSWORD: password
+      SPRING_PROFILES_ACTIVE: docker
+      FOOTBALL_DATA_API_TOKEN: ${FOOTBALL_DATA_API_TOKEN}
+    ports:
+      - "8081:8081"
+    depends_on:
+      - match-db
+
+  league-service:
+    build:
+      context: .
+      dockerfile: league-service/Dockerfile
+    environment:
+      DB_HOST: league-db
+      DB_PORT: 5432
+      DB_NAME: leaguedb
+      DB_USER: postgres
+      DB_PASSWORD: password
+      SPRING_PROFILES_ACTIVE: docker
+      FOOTBALL_DATA_API_TOKEN: ${FOOTBALL_DATA_API_TOKEN}
+    ports:
+      - "8082:8082"
+    depends_on:
+      - league-db
+
+  team-service:
+    build:
+      context: .
+      dockerfile: team-service/Dockerfile
+    environment:
+      DB_HOST: team-db
+      DB_PORT: 5432
+      DB_NAME: teamdb
+      DB_USER: postgres
+      DB_PASSWORD: password
+      SPRING_PROFILES_ACTIVE: docker
+      FOOTBALL_DATA_API_TOKEN: ${FOOTBALL_DATA_API_TOKEN}
+    ports:
+      - "8083:8083"
+    depends_on:
+      - team-db
+
+  stadium-service:
+    build:
+      context: .
+      dockerfile: stadium-service/Dockerfile
+    environment:
+      DB_HOST: stadium-db
+      DB_PORT: 5432
+      DB_NAME: stadiumdb
+      DB_USER: postgres
+      DB_PASSWORD: password
+      SPRING_PROFILES_ACTIVE: docker
+      API_FOOTBALL_API_KEY: ${API_FOOTBALL_API_KEY}
+    ports:
+      - "8084:8084"
+    depends_on:
+      - stadium-db
 
 volumes:
-  postgres_data:
+  match_db_data:
+  league_db_data:
+  team_db_data:
+  stadium_db_data:
