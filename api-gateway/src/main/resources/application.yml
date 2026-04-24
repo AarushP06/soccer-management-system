@@ -2,56 +2,68 @@ server:
   port: 8080
 
 spring:
+  profiles:
+    active: local
   application:
     name: api-gateway
   cloud:
     gateway:
       routes:
         - id: match-service
-          uri: http://localhost:8081
+          uri: ${services.match.url}
           predicates:
-            - Path=/matches/**
+            - Path=/matches,/matches/**
           filters:
-            - RewritePath=/matches/(?<remaining>.*), /api/matches/${remaining}
+            - RewritePath=/matches(?<remaining>/?.*), /api/matches${remaining}
 
         - id: league-service
-          uri: http://localhost:8082
+          uri: ${services.league.url}
           predicates:
-            - Path=/leagues/**
+            - Path=/leagues,/leagues/**
           filters:
-            - RewritePath=/leagues/(?<remaining>.*), /api/leagues/${remaining}
+            - RewritePath=/leagues(?<remaining>/?.*), /api/leagues${remaining}
 
         - id: team-service
-          uri: http://localhost:8083
+          uri: ${services.team.url}
           predicates:
-            - Path=/teams/**
+            - Path=/teams,/teams/**
           filters:
-            - RewritePath=/teams/(?<remaining>.*), /api/teams/${remaining}
+            - RewritePath=/teams(?<remaining>/?.*), /api/teams${remaining}
 
         - id: stadium-service
-          uri: http://localhost:8084
+          uri: ${services.stadium.url}
           predicates:
-            - Path=/stadiums/**
+            - Path=/stadiums,/stadiums/**
           filters:
-            - RewritePath=/stadiums/(?<remaining>.*), /api/stadiums/${remaining}
+            - RewritePath=/stadiums(?<remaining>/?.*), /api/stadiums${remaining}
 
 # Also keep previous /api/* mappings for compatibility (optional)
         - id: match-service-api
-          uri: http://localhost:8081
+          uri: ${services.match.url}
           predicates:
-            - Path=/api/matches/**
+            - Path=/api/matches,/api/matches/**
         - id: league-service-api
-          uri: http://localhost:8082
+          uri: ${services.league.url}
           predicates:
-            - Path=/api/leagues/**
+            - Path=/api/leagues,/api/leagues/**
         - id: team-service-api
-          uri: http://localhost:8083
+          uri: ${services.team.url}
           predicates:
-            - Path=/api/teams/**
+            - Path=/api/teams,/api/teams/**
         - id: stadium-service-api
-          uri: http://localhost:8084
+          uri: ${services.stadium.url}
           predicates:
-            - Path=/api/stadiums/**
+            - Path=/api/stadiums,/api/stadiums/**
+
+services:
+  match:
+    url: http://localhost:8081
+  league:
+    url: http://localhost:8082
+  team:
+    url: http://localhost:8083
+  stadium:
+    url: http://localhost:8084
 
 # springdoc OpenAPI settings
 springdoc:
@@ -61,3 +73,19 @@ springdoc:
     path: /swagger-ui.html
 
 # Removed API tokens for local development; gateways do not require external API keys
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+services:
+  match:
+    url: http://match-service:8081
+  league:
+    url: http://league-service:8082
+  team:
+    url: http://team-service:8083
+  stadium:
+    url: http://stadium-service:8084

@@ -17,6 +17,11 @@
       "name": "00 Ping Services",
       "item": [
         {
+          "name": "Ping API Gateway",
+          "request": { "method": "GET", "url": "{{gatewayUrl}}/ping" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('api gateway reachable', function(){ pm.response.to.have.status(200); });"], "type": "text/javascript" } }]
+        },
+        {
           "name": "Ping Match Service",
           "request": { "method": "GET", "url": "{{matchUrl}}/ping" },
           "event": [{ "listen": "test", "script": { "exec": ["pm.test('match service reachable', function(){ pm.response.to.have.status(200); });"], "type": "text/javascript" } }]
@@ -137,7 +142,17 @@
     },
 
     {
-      "name": "02 Get All",
+      "name": "02 Gateway Routed GETs",
+      "item": [
+        { "name": "Gateway Get All Leagues", "request": { "method": "GET", "url": "{{gatewayUrl}}/leagues" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('gateway leagues returned', function(){ pm.response.to.have.status(200); });"], "type": "text/javascript" } }] },
+        { "name": "Gateway Get All Stadiums", "request": { "method": "GET", "url": "{{gatewayUrl}}/stadiums" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('gateway stadiums returned', function(){ pm.response.to.have.status(200); });"], "type": "text/javascript" } }] },
+        { "name": "Gateway Get All Teams", "request": { "method": "GET", "url": "{{gatewayUrl}}/teams" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('gateway teams returned', function(){ pm.response.to.have.status(200); });"], "type": "text/javascript" } }] },
+        { "name": "Gateway Get All Matches", "request": { "method": "GET", "url": "{{gatewayUrl}}/matches" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('gateway matches returned', function(){ pm.response.to.have.status(200); });"], "type": "text/javascript" } }] }
+      ]
+    },
+
+    {
+      "name": "03 Get All",
       "item": [
         { "name": "Get All Leagues", "request": { "method": "GET", "url": "{{leagueUrl}}/api/leagues" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('leagues returned', function(){ pm.response.to.have.status(200); pm.test('not empty', function(){ pm.expect(pm.response.json().length).to.be.at.least(1); }); });"], "type": "text/javascript" } }] },
         { "name": "Get All Stadiums", "request": { "method": "GET", "url": "{{stadiumUrl}}/api/stadiums" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('stadiums returned', function(){ pm.response.to.have.status(200); pm.test('not empty', function(){ pm.expect(pm.response.json().length).to.be.at.least(1); }); });"], "type": "text/javascript" } }] },
@@ -147,7 +162,7 @@
     },
 
     {
-      "name": "03 Get One",
+      "name": "04 Get One",
       "item": [
         { "name": "Get One League", "request": { "method": "GET", "url": "{{leagueUrl}}/api/leagues/{{leagueId}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('get league 200', function(){ pm.response.to.have.status(200); pm.test('body not empty', function(){ pm.expect(pm.response.text()).to.not.be.empty; }); });"], "type": "text/javascript" } }] },
         { "name": "Get One Stadium", "request": { "method": "GET", "url": "{{stadiumUrl}}/api/stadiums/{{stadiumId}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('get stadium 200', function(){ pm.response.to.have.status(200); pm.test('body not empty', function(){ pm.expect(pm.response.text()).to.not.be.empty; }); });"], "type": "text/javascript" } }] },
@@ -157,7 +172,7 @@
     },
 
     {
-      "name": "04 Update One",
+      "name": "05 Update One",
       "item": [
         { "name": "Update League", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": {"mode":"raw","raw":"{\n  \"name\": \"Premier League (Updated)\"\n}" }, "url": "{{leagueUrl}}/api/leagues/{{leagueId}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('update league 200', function(){ pm.response.to.have.status(200); });"], "type": "text/javascript" } }] },
         { "name": "Update Stadium", "request": { "method": "PUT", "header": [{"key":"Content-Type","value":"application/json"}], "body": {"mode":"raw","raw":"{\n  \"name\": \"Emirates Stadium (Updated)\"\n}" }, "url": "{{stadiumUrl}}/api/stadiums/{{stadiumId}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('update stadium 200', function(){ pm.response.to.have.status(200); });"], "type": "text/javascript" } }] },
@@ -167,7 +182,17 @@
     },
 
     {
-      "name": "05 Negative Tests",
+      "name": "06 Delete One",
+      "item": [
+        { "name": "Delete Match", "request": { "method": "DELETE", "url": "{{matchUrl}}/api/matches/{{matchId}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('delete match 204', function(){ pm.response.to.have.status(204); });"], "type": "text/javascript" } }] },
+        { "name": "Delete Team", "request": { "method": "DELETE", "url": "{{teamUrl}}/api/teams/{{teamId2}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('delete team 204', function(){ pm.response.to.have.status(204); });"], "type": "text/javascript" } }] },
+        { "name": "Delete Stadium", "request": { "method": "DELETE", "url": "{{stadiumUrl}}/api/stadiums/{{stadiumId}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('delete stadium 204', function(){ pm.response.to.have.status(204); });"], "type": "text/javascript" } }] },
+        { "name": "Delete League", "request": { "method": "DELETE", "url": "{{leagueUrl}}/api/leagues/{{leagueId}}" }, "event": [{ "listen": "test", "script": { "exec": ["pm.test('delete league 204', function(){ pm.response.to.have.status(204); });"], "type": "text/javascript" } }] }
+      ]
+    },
+
+    {
+      "name": "07 Negative Tests",
       "item": [
         { "name": "Get Missing League", "request": { "method": "GET", "url": "{{leagueUrl}}/api/leagues/{{missingLeagueId}}" }, "event": [ { "listen": "prerequest", "script": { "exec": ["pm.collectionVariables.set('missingLeagueId', '99999999');"], "type": "text/javascript" } }, { "listen": "test", "script": { "exec": ["pm.test('missing league 404', function(){ pm.response.to.have.status(404); });"], "type": "text/javascript" } } ] },
         { "name": "Get Missing Stadium", "request": { "method": "GET", "url": "{{stadiumUrl}}/api/stadiums/{{missingStadiumId}}" }, "event": [ { "listen": "prerequest", "script": { "exec": ["pm.collectionVariables.set('missingStadiumId','00000000-0000-0000-0000-000000000999');"], "type": "text/javascript" } }, { "listen": "test", "script": { "exec": ["pm.test('missing stadium 404', function(){ pm.response.to.have.status(404); });"], "type": "text/javascript" } } ] },
