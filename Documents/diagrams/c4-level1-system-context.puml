@@ -2,20 +2,18 @@
 !includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
 Person(apiUser, "API Client / User", "Web or mobile client, or external API consumer")
-System(apiGateway, "API Gateway", "Single external entry point; routing, auth, rate-limiting")
 System(soccer, "Soccer Management System", "Microservices-based system for managing matches, leagues, teams and stadiums")
+System(apiGateway, "API Gateway", "Single external entry point for all client traffic")
+System(seedData, "Local Seed Data", "Packaged JSON seed files used for demo/local runs; no external API keys required")
 
-System_Ext(fd_org, "football-data.org", "External football data API (league, team, and match data)")
-System_Ext(api_football, "API-Football", "External football data API (stadium/venue data)")
-
-Rel(apiUser, apiGateway, "Sends requests (only entry point)", "HTTPS/REST")
-Rel(apiGateway, soccer, "Forwards requests to appropriate microservices", "HTTPS/REST")
-Rel(soccer, fd_org, "Imports league, team, and match data from", "REST/HTTP")
-Rel(soccer, api_football, "Imports stadium/venue data from", "REST/HTTP")
+Rel(apiUser, apiGateway, "Sends requests", "HTTPS/REST")
+Rel(apiGateway, soccer, "Routes requests to internal services", "HTTP/REST")
+Rel(soccer, seedData, "Loads local demo/seed data from", "Classpath JSON")
 
 note right of apiGateway
 API Gateway is the single external entry point for all clients.
-Performs routing, authentication, rate limiting and request validation.
+Routes requests to the 4 backend services.
+Works locally and in Docker using profile-specific upstream URLs.
 end note
 
 note right of soccer
@@ -24,6 +22,9 @@ System constraints:
 - Each service owns its own PostgreSQL database
 - Local testing uses H2
 - Docker Compose uses PostgreSQL
+- No service reads another service's database directly
+- Demo mode uses local seed data only
+- No external API keys are required
 - Deployment uses 9 Docker containers
   (5 service containers + 4 PostgreSQL containers)
 end note

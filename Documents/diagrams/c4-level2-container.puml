@@ -4,11 +4,12 @@
 Person(apiUser, "API Client / User", "Web or mobile client, or external API consumer")
 
 System_Boundary(soccer, "Soccer Management System") {
-  Container(apiGateway, "API Gateway", "Reverse proxy / routing / auth", "Single external entry point; routes requests to downstream services")
-  Container(matchSvc, "Match Service", "Spring Boot\nHATEOAS, Ports, ACL", "Core orchestrator/data aggregator; aggregates league, team and stadium data; imports match data from football-data.org")
-  Container(leagueSvc, "League Service", "Spring Boot", "Owns league domain and data; imports league data from football-data.org")
-  Container(teamSvc, "Team Service", "Spring Boot", "Owns team domain and data; imports team data from football-data.org")
-  Container(stadiumSvc, "Stadium Service", "Spring Boot", "Owns stadium/venue domain and data; imports venue data from API-Football")
+  Container(apiGateway, "API Gateway", "Spring Boot Gateway", "Single external entry point; routes requests to downstream services in local and Docker profiles")
+  Container(matchSvc, "Match Service", "Spring Boot\nHATEOAS, Ports, ACL adapters", "Core orchestrator/data aggregator; composes league, team and stadium data via service APIs")
+  Container(leagueSvc, "League Service", "Spring Boot REST service", "Owns league domain and data")
+  Container(teamSvc, "Team Service", "Spring Boot REST service", "Owns team domain and data")
+  Container(stadiumSvc, "Stadium Service", "Spring Boot REST service", "Owns stadium domain and data")
+  Container(seedData, "Local Seed Data", "Classpath JSON files", "Demo/test data used instead of external APIs")
 }
 
 ContainerDb(matchDb, "Match PostgreSQL", "PostgreSQL", "Owned by Match Service")
@@ -16,23 +17,20 @@ ContainerDb(leagueDb, "League PostgreSQL", "PostgreSQL", "Owned by League Servic
 ContainerDb(teamDb, "Team PostgreSQL", "PostgreSQL", "Owned by Team Service")
 ContainerDb(stadiumDb, "Stadium PostgreSQL", "PostgreSQL", "Owned by Stadium Service")
 
-System_Ext(fd_org, "football-data.org", "External football data API (league, team, match data)")
-System_Ext(api_football, "API-Football", "External stadium/venue data API")
-
 Rel(apiUser, apiGateway, "Sends requests (all client traffic)", "HTTPS/REST")
 Rel(apiGateway, matchSvc, "Routes Match-related and aggregator requests", "HTTP/REST")
 Rel(apiGateway, leagueSvc, "Routes League-related requests", "HTTP/REST")
 Rel(apiGateway, teamSvc, "Routes Team-related requests", "HTTP/REST")
 Rel(apiGateway, stadiumSvc, "Routes Stadium-related requests", "HTTP/REST")
 
-Rel(matchSvc, leagueSvc, "Lookup / aggregate league data", "HTTP/REST / application ports")
-Rel(matchSvc, teamSvc, "Lookup / aggregate team data", "HTTP/REST / application ports")
-Rel(matchSvc, stadiumSvc, "Lookup / aggregate stadium data", "HTTP/REST / application ports")
+Rel(matchSvc, leagueSvc, "Lookup / aggregate league data", "HTTP/REST via lookup ports")
+Rel(matchSvc, teamSvc, "Lookup / aggregate team data", "HTTP/REST via lookup ports")
+Rel(matchSvc, stadiumSvc, "Lookup / aggregate stadium data", "HTTP/REST via lookup ports")
 
-Rel(matchSvc, fd_org, "Import external match data from", "REST API")
-Rel(leagueSvc, fd_org, "Import league data from", "REST API")
-Rel(teamSvc, fd_org, "Import team data from", "REST API")
-Rel(stadiumSvc, api_football, "Import stadium/venue data from", "REST API")
+Rel(matchSvc, seedData, "Loads local match seed data", "Classpath JSON")
+Rel(leagueSvc, seedData, "Loads local league seed data", "Classpath JSON")
+Rel(teamSvc, seedData, "Loads local team seed data", "Classpath JSON")
+Rel(stadiumSvc, seedData, "Loads local stadium seed data", "Classpath JSON")
 
 Rel(matchSvc, matchDb, "Reads/Writes", "JPA / SQL")
 Rel(leagueSvc, leagueDb, "Reads/Writes", "JPA / SQL")
@@ -42,9 +40,9 @@ Rel(stadiumSvc, stadiumDb, "Reads/Writes", "JPA / SQL")
 note right of apiGateway
 API Gateway responsibilities:
 - Single external entry point
-- Routing to services
-- Authentication
-- Rate limiting
+- Routing to all 4 backend services
+- Local profile uses localhost upstreams
+- Docker profile uses container hostnames
 end note
 
 note right of matchSvc
@@ -52,12 +50,15 @@ Match Service responsibilities:
 - Orchestrates and aggregates league, team, and stadium data
 - Exposes HATEOAS hypermedia for navigation
 - Implements ports and ACL boundaries
+- Does not access other services' databases directly
 end note
 
 note bottom of soccer
 Operational modes and deployment:
 - Local dev uses H2 per service
 - Docker Compose uses PostgreSQL
+- No external API keys are required for the demo
+- Demo data comes from packaged local seed files
 - Deployment uses 9 Docker containers:
   5 service containers and 4 PostgreSQL containers
 end note
