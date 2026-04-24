@@ -1,530 +1,331 @@
-# Soccer Website!
+# Soccer Management System
 
-A **DDD modular monolith** Spring Boot 3 application for managing soccer data (teams, leagues, stadiums, matches) with seamless integration of two external APIs: **football-data.org** for competitions and **API-Football** for venues.
+Spring Boot microservices project for managing leagues, teams, stadiums, and matches.
 
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Modules](#modules)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Quick Start (Local, H2 Database)](#quick-start-local-h2-database)
-- [Run with Docker (PostgreSQL)](#run-with-docker-postgresql)
-- [Import Workflow](#import-workflow)
-- [API Endpoints](#api-endpoints)
-- [Swagger & Documentation](#swagger--documentation)
-- [H2 Console](#h2-console)
-- [Exception Handling](#exception-handling)
-- [Testing](#testing)
-- [Common Gradle Tasks](#common-gradle-tasks)
-- [Environment & Configuration](#environment--configuration)
-- [Tips for Development](#tips-for-development)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
+This repo is set up for the Project Milestone 2 Part 1 demo:
+- 5 services
+- API Gateway on `8080`
+- Match Service as orchestrator/data aggregator
+- Local run with H2
+- Docker run with PostgreSQL
+- Local seed data only
+- No external API keys required for the demo
 
 ---
 
-## Overview
+## Services
 
-This is a **Spring Boot 3.3.5** application using **Java 17** and **Gradle** (with wrapper). It follows **Domain-Driven Design (DDD)** principles with a modular monolith structure. Each module handles a distinct domain: **league**, **team**, **location**, and **match**.
+- `api-gateway` on `8080`
+- `match-service` on `8081`
+- `league-service` on `8082`
+- `team-service` on `8083`
+- `stadium-service` on `8084`
 
-### Key Features
+### Architecture Notes
 
-✅ **DDD Architecture** — Clean separation of concerns with api, application, domain, and infrastructure layers  
-✅ **Import Features** — Import leagues, teams, and matches from football-data.org; import stadiums from API-Football  
-✅ **Duplicate Protection** — Prevents re-importing duplicate records  
-✅ **Exception Handling** — Clean HTTP status mapping (400, 404, 409, 500)  
-✅ **HATEOAS & Swagger** — Self-documenting APIs with Spring Doc OpenAPI  
-✅ **Transaction Safety** — All imports wrapped in `@Transactional`  
-✅ **Flexible Profiles** — Local (H2) and Docker (PostgreSQL) configurations
-
----
-
-## Modules
-
-### `league`
-**Responsibility:** Manage soccer leagues/competitions  
-**Layers:** api, application, domain, infrastructure  
-**Key Features:**
-- CRUD operations for leagues
-- Import leagues from football-data.org (`POST /api/leagues/import/competition/{code}`)
-- Duplicate protection by league name
-
-### `team`
-**Responsibility:** Manage soccer teams  
-**Layers:** api, application, domain, infrastructure  
-**Key Features:**
-- CRUD operations for teams
-- Import teams from football-data.org competitions (`POST /api/teams/import/competition/{code}`)
-- Team-League relationship
-- Duplicate protection by team name
-
-### `location`
-**Responsibility:** Manage stadiums/venues  
-**Layers:** api, application, domain, infrastructure  
-**Key Features:**
-- CRUD operations for stadiums
-- Import stadiums from API-Football (`POST /api/stadiums/import/venue/{venueId}`)
-- Stadium details: name, city, country, capacity
-- Duplicate protection by stadium name
-
-### `match`
-**Responsibility:** Manage matches and scheduling  
-**Layers:** api, application, domain, infrastructure  
-**Key Features:**
-- CRUD operations for matches
-- Import matches from football-data.org (`POST /api/matches/import/competition/{code}?stadiumId={uuid}`)
-- Duplicate detection by (league, homeTeam, awayTeam)
-- Missing team/league tracking
-- Match details: status (SCHEDULED, COMPLETED, etc.)
-
-### `shared`
-**Responsibility:** Cross-cutting concerns  
-**Key Features:**
-- Global exception handler (maps custom exceptions to HTTP status codes)
-- Configuration for external APIs (football-data.org, API-Football)
-- Base client implementations for REST calls
+- `match-service` is the orchestrator/data aggregator
+- `match-service` uses HATEOAS, ports/interfaces, and ACL-style service adapters
+- services communicate over HTTP/REST
+- services do **not** access each other's databases directly
+- each non-gateway service owns its own database
+- local demo mode uses packaged JSON seed data
 
 ---
 
-## Tech Stack
-
-- **Language:** Java 17
-- **Framework:** Spring Boot 3.3.5
-- **Build:** Gradle 8.x (with wrapper)
-- **Database:** H2 (local) / PostgreSQL (Docker)
-- **Migrations:** Flyway
-- **Documentation:** SpringDoc OpenAPI (Swagger)
-- **APIs:** HATEOAS, Spring Data JPA
-- **Testing:** JUnit 5, Spring Boot Test
-- **Container:** Docker & Docker Compose (optional)
-
----
-
-## Project Structure
-
-```
-soccer-management-system/
-├─ src/main/java/com/example/soccermanagement/
-│  ├─ league/                          # League module
-│  │  ├─ api/                          # REST controllers & DTOs
-│  │  ├─ application/                  # Business logic & services
-│  │  ├─ domain/                       # Domain aggregate (League)
-│  │  └─ infrastructure/               # Persistence & integration
-│  ├─ team/                            # Team module (similar structure)
-│  ├─ location/                        # Location/Stadium module
-│  ├─ match/                           # Match module
-│  └─ shared/                          # Shared config & exception handling
-│     ├─ api/                          # GlobalExceptionHandler
-│     ├─ config/                       # API properties & configuration
-│     ├─ domain/                       # Shared domain (DomainException)
-│     └─ infrastructure/               # External API clients
-├─ src/main/resources/
-│  ├─ application.yml                  # Main configuration
-│  ├─ application-local.yml            # Local profile (H2)
-│  ├─ application-docker.yml           # Docker profile (PostgreSQL)
-│  └─ db/migration/                    # Flyway migration scripts
-├─ src/test/java/                      # Unit & integration tests
-├─ docker-compose.yml                  # Run with PostgreSQL
-├─ Dockerfile                          # Container image
-├─ build.gradle                        # Gradle build config
-├─ gradlew / gradlew.bat               # Gradle wrapper (no local install needed)
-├─ settings.gradle                     # Gradle settings
-└─ README.md                           # This file
-```
-
----
-
-## Prerequisites
-
-- **JDK 17+** (required for Spring Boot 3.3.5)
-- **Git**
-- **Docker & Docker Compose** (only if you want to run with PostgreSQL)
-- You **do not** need a local Gradle install — use the wrapper: `./gradlew` (or `.\gradlew.bat` on Windows)
-
----
-
-## Quick Start (Local, H2 Database)
+## Build From Root
 
 From the project root:
 
-### 1. Clone or Open the Repository
-```bash
-git clone <repo-url>
-cd soccer-management-system
+```powershell
+.\gradlew.bat clean build
 ```
 
-### 2. Build the Project
-```bash
-./gradlew clean build
-```
-(On Windows: `.\gradlew.bat clean build`)
+This builds the full multi-project Gradle setup from the root.
 
-### 3. Run the Application
-```bash
-./gradlew bootRun
-```
+You can also build all bootable JARs explicitly with:
 
-The application starts on **http://localhost:8080** with the **local** profile (H2 in-memory database).
-
-### 4. Access Swagger UI
+```powershell
+.\gradlew.bat clean buildAllJars
 ```
-http://localhost:8080/swagger-ui/index.html
-```
-
-### 5. Access H2 Console (optional)
-```
-http://localhost:8080/h2-console
-```
-- JDBC URL: `jdbc:h2:mem:testdb`
-- User: `sa`
-- Password: (leave blank)
 
 ---
 
-## Run with Docker (PostgreSQL)
+## Run Locally (IntelliJ + H2)
+
+Run these applications in this order:
+
+1. `LeagueServiceApplication`
+2. `TeamServiceApplication`
+3. `StadiumServiceApplication`
+4. `MatchServiceApplication`
+5. `GatewayApplication`
+
+### Local Runtime Notes
+
+- local profile is the default
+- local mode uses H2 in-memory databases
+- gateway routes to `localhost` service ports
+- no PostgreSQL is needed
+- no external API keys are needed
+
+### Local URLs
+
+- Gateway: `http://localhost:8080`
+- Match Service: `http://localhost:8081`
+- League Service: `http://localhost:8082`
+- Team Service: `http://localhost:8083`
+- Stadium Service: `http://localhost:8084`
+
+---
+
+## Run With Docker (PostgreSQL)
 
 From the project root:
 
-### 1. Build and Start Services
-```bash
+```powershell
+docker compose down
 docker compose up --build
 ```
 
-This starts:
-- **Spring Boot App** on port 8080
-- **PostgreSQL** on port 5432
+This starts 9 containers:
 
-### 2. Stop Services
-```bash
-docker compose down
-```
+- 5 service containers
+- 4 PostgreSQL containers
 
-### 3. View Logs
-```bash
-docker compose logs -f app
-```
+### Docker Runtime Notes
 
----
+- non-gateway services run with the `docker` profile
+- `api-gateway` also runs with the `docker` profile
+- gateway routes to Docker service hostnames, not `localhost`
+- PostgreSQL is used for the 4 non-gateway services
+- local seed data is still used for demo/test flows
+- no external API keys are required
 
-## Import Workflow
+### Docker Ports
 
-The system integrates with **two external APIs** for importing data:
-
-### Step 1: Import League (from football-data.org)
-```bash
-POST http://localhost:8080/api/leagues/import/competition/PL
-```
-**Response:** 201 Created with League details  
-**Used for:** Fetching competition name and metadata
-
-### Step 2: Import Teams (from football-data.org)
-```bash
-POST http://localhost:8080/api/teams/import/competition/PL
-```
-**Response:** 201 Created with import summary (imported: X, skipped: Y)  
-**Used for:** Teams participating in the competition
-
-### Step 3: Create or Import Stadium (from API-Football)
-Option A: Create manually
-```bash
-POST http://localhost:8080/api/stadiums
-Body: { "name": "Anfield" }
-```
-
-Option B: Import from API-Football
-```bash
-POST http://localhost:8080/api/stadiums/import/venue/549
-```
-**Response:** 201 Created with Stadium details
-
-### Step 4: Import Matches (from football-data.org)
-```bash
-POST http://localhost:8080/api/matches/import/competition/PL?stadiumId=<uuid>
-```
-**Response:** 201 Created with import summary (imported: X, skipped: Y, missingTeams: Z, missingLeague: W)
+- Gateway: `8080`
+- Match Service: `8081`
+- League Service: `8082`
+- Team Service: `8083`
+- Stadium Service: `8084`
+- Match DB: `5433`
+- League DB: `5434`
+- Team DB: `5435`
+- Stadium DB: `5436`
 
 ---
 
-## API Endpoints
+## Swagger URLs
 
-### League Module
-```
-GET    /api/leagues                                   # List all leagues
-GET    /api/leagues/{id}                              # Get one league
-POST   /api/leagues                                   # Create league (manual)
-POST   /api/leagues/import/competition/{code}         # Import from football-data.org
-PUT    /api/leagues/{id}                              # Update league
-DELETE /api/leagues/{id}                              # Delete league
-```
+Use these URLs in local or Docker runs:
 
-### Team Module
-```
-GET    /api/teams                                     # List all teams
-GET    /api/teams/{id}                                # Get one team
-POST   /api/teams                                     # Create team (manual)
-POST   /api/teams/import/competition/{code}           # Import from football-data.org
-PUT    /api/teams/{id}                                # Update team
-DELETE /api/teams/{id}                                # Delete team
-```
-
-### Location Module (Stadiums)
-```
-GET    /api/stadiums                                  # List all stadiums
-GET    /api/stadiums/{id}                             # Get one stadium
-POST   /api/stadiums                                  # Create stadium (manual)
-POST   /api/stadiums/import/venue/{venueId}           # Import from API-Football
-PUT    /api/stadiums/{id}                             # Update stadium
-DELETE /api/stadiums/{id}                             # Delete stadium
-```
-
-### Match Module
-```
-GET    /api/matches                                   # List all matches
-GET    /api/matches/{id}                              # Get one match
-GET    /api/matches/{id}/details                      # Get match with team/league details
-POST   /api/matches                                   # Create match (manual)
-POST   /api/matches/import/competition/{code}         # Import from football-data.org
-DELETE /api/matches/{id}                              # Delete match
-```
-
----
-
-## Swagger & Documentation
-
-Access the interactive Swagger UI at:
-```
-http://localhost:8080/swagger-ui/index.html
-```
-
-All endpoints are self-documenting with request/response examples, parameter descriptions, and error codes.
+- `http://localhost:8080/swagger-ui.html`
+- `http://localhost:8081/swagger-ui.html`
+- `http://localhost:8082/swagger-ui.html`
+- `http://localhost:8083/swagger-ui.html`
+- `http://localhost:8084/swagger-ui.html`
 
 ---
 
 ## H2 Console
 
-When running locally with the **local** profile, access the H2 web console:
-```
-http://localhost:8080/h2-console
-```
+When running locally, each non-gateway service uses H2.
 
-**Credentials:**
-- JDBC URL: `jdbc:h2:mem:testdb`
+Service-local H2 console paths are enabled in the service configs:
+
+- `http://localhost:8081/h2-console`
+- `http://localhost:8082/h2-console`
+- `http://localhost:8083/h2-console`
+- `http://localhost:8084/h2-console`
+
+Typical local credentials:
+
 - User: `sa`
-- Password: (leave blank)
+- Password: blank
 
 ---
 
-## Exception Handling
+## API Summary
 
-All custom exceptions are mapped to HTTP status codes via the **GlobalExceptionHandler**:
+### Gateway Routes
 
-| Exception | HTTP Status | Example |
-|-----------|-------------|---------|
-| `LeagueNotFoundException` | 404 | League not found for code: PL |
-| `TeamNotFoundException` | 404 | Team not found |
-| `StadiumNotFoundException` | 404 | Stadium not found |
-| `MatchNotFoundException` | 404 | Match not found |
-| `LeagueConflictException` | 409 | League already exists: Premier League |
-| `TeamConflictException` | 409 | Team already exists: Manchester United |
-| `StadiumConflictException` | 409 | Stadium already exists: Anfield |
-| `MatchConflictException` | 409 | Match already exists |
-| `DomainException` | 400 | Home team and away team must be different |
-| `MethodArgumentNotValidException` | 400 | Validation failed |
-| Generic `Exception` | 500 | Unexpected error |
+Gateway forwards these collection and nested paths:
 
-**Response Format:**
-```json
-{
-  "timestamp": "2026-03-22T10:30:45.123456",
-  "status": 404,
-  "error": "Not Found",
-  "message": "League not found for code: INVALID",
-  "path": "/api/leagues/import/competition/INVALID",
-  "details": []
-}
+- `/matches` and `/api/matches/**`
+- `/leagues` and `/api/leagues/**`
+- `/teams` and `/api/teams/**`
+- `/stadiums` and `/api/stadiums/**`
+
+### Core REST Endpoints
+
+#### League Service
+
+```text
+GET    /api/leagues
+GET    /api/leagues/{id}
+POST   /api/leagues
+POST   /api/leagues/bulk
+POST   /api/leagues/import/local
+PUT    /api/leagues/{id}
+DELETE /api/leagues/{id}
 ```
 
----
+#### Team Service
 
-## Testing
-
-### Run All Tests
-```bash
-./gradlew test
+```text
+GET    /api/teams
+GET    /api/teams/{id}
+POST   /api/teams
+POST   /api/teams/bulk
+POST   /api/teams/import/local
+PUT    /api/teams/{id}
+DELETE /api/teams/{id}
 ```
 
-### Run Tests for a Specific Module
-```bash
-./gradlew :league:test
-./gradlew :team:test
-./gradlew :match:test
-./gradlew :location:test
+#### Stadium Service
+
+```text
+GET    /api/stadiums
+GET    /api/stadiums/{id}
+POST   /api/stadiums
+POST   /api/stadiums/bulk
+POST   /api/stadiums/import/local
+PUT    /api/stadiums/{id}
+DELETE /api/stadiums/{id}
 ```
 
-### Run Tests with Coverage (if configured)
-```bash
-./gradlew test jacocoTestReport
-```
+#### Match Service
 
----
-
-## Common Gradle Tasks
-
-```bash
-# Build everything
-./gradlew clean build
-
-# Run the application
-./gradlew bootRun
-
-# Run tests
-./gradlew test
-
-# Check code quality
-./gradlew check
-
-# Build Docker image
-./gradlew bootBuildImage
-
-# View available tasks
-./gradlew tasks
+```text
+GET    /api/matches
+GET    /api/matches/{id}
+GET    /api/matches/{id}/details
+POST   /api/matches
+POST   /api/matches/bulk
+POST   /api/matches/import/local
+PUT    /api/matches/{id}
+DELETE /api/matches/{id}
 ```
 
 ---
 
-## Environment & Configuration
+## Postman Demo Order
 
-### Profiles
-- **local** (default): H2 in-memory database
-- **docker**: PostgreSQL in Docker
+Use:
 
-### Key Configuration Properties
+- `postman/soccer-microservices-no-external-api.postman_collection.json`
 
-**application.yml:**
-```yaml
-spring:
-  profiles:
-    active: local          # Change to 'docker' for PostgreSQL
-  jpa:
-    hibernate:
-      ddl-auto: validate  # Flyway manages schema
-  flyway:
-    enabled: true         # Enable database migrations
+Run the folders in this order:
 
-football-data:           # football-data.org API
-  base-url: https://api.football-data.org/v4
-  api-token: ${FOOTBALL_DATA_TOKEN:your-token-here}
+1. `00 Ping Services`
+2. `01 Bulk Create`
+3. `02 Gateway Routed GETs`
+4. `03 Get All`
+5. `04 Get One`
+6. `05 Update One`
+7. `06 Delete One`
+8. `07 Negative Tests`
 
-api-football:            # API-Football API
-  base-url: https://v3.football.api-sports.io
-  api-key: ${API_FOOTBALL_KEY:your-key-here}
+### What the Collection Covers
+
+- positive tests
+- negative tests
+- `GET`, `POST`, `PUT`, `DELETE`
+- expected HTTP status codes
+- gateway checks
+- direct service checks
+- local seed/demo-safe flows
+
+---
+
+## Demo Checklist Notes
+
+This repo currently includes:
+
+- root multi-project Gradle build
+- Dockerfiles for all 5 services
+- `docker-compose.yml` for 9 containers
+- service-to-service communication inside Docker
+- Swagger on all 5 services
+- `@ControllerAdvice` in all services
+- REST controllers in all services
+- H2 locally
+- PostgreSQL in Docker
+
+---
+
+## Verification Commands
+
+### Root Build
+
+```powershell
+.\gradlew.bat clean build
 ```
 
-### Environment Variables
-Set these for external API access:
-```bash
-FOOTBALL_DATA_TOKEN=your-football-data-token
-API_FOOTBALL_KEY=your-api-football-key
+### Compose Config
+
+```powershell
+docker compose config
+```
+
+### Full Docker Run
+
+```powershell
+docker compose down
+docker compose up --build
 ```
 
 ---
 
-## Tips for Development
+## No External API Keys
 
-1. **Start with a fresh database:**
-   ```bash
-   rm -rf ~/.h2/test* (on Linux/Mac)
-   ```
-   Then run the application fresh.
+For the milestone demo:
 
-2. **Use Swagger to test endpoints** — it's faster than Postman for quick checks.
+- do not use `FOOTBALL_DATA_API_TOKEN`
+- do not use `API_FOOTBALL_API_KEY`
+- use local packaged seed data only
 
-3. **Import in order:**
-   1. League
-   2. Team
-   3. Stadium (optional if using manual creation)
-   4. Match
-
-4. **Check API tokens** — If import endpoints return 401 or 403, verify your external API tokens are valid.
-
-5. **Watch the logs** — The app logs all HTTP calls to external APIs:
-   ```
-   DEBUG com.example.soccermanagement...
-   ```
-
-6. **Use Spring Boot Actuator** for health checks:
-   ```
-   http://localhost:8080/actuator/health
-   ```
+The Docker setup and README flow assume a no-external-key demo path.
 
 ---
 
 ## Troubleshooting
 
-### Port 8080 Already in Use
-```bash
-# Change in application.yml
-server:
-  port: 8081
+### Root build fails
+
+Use:
+
+```powershell
+.\gradlew.bat clean build
 ```
 
-### H2 Console Not Accessible
-Ensure the **local** profile is active (check logs for "The following profiles are active: local").
+from the repo root, not from an individual service folder.
 
-### Import Endpoints Return 404
-1. Verify the external API token is set (`FOOTBALL_DATA_TOKEN`, `API_FOOTBALL_KEY`)
-2. Check if the resource exists in the external API (e.g., code "PL" for Premier League)
-3. Review logs for REST client errors
+### Docker stack does not start
 
-### Duplicate Import Error (409 Conflict)
-This is expected on the second import of the same resource. The system prevents duplicates by name.
+Rebuild from scratch:
 
-### PostgreSQL Connection Failed (Docker)
-```bash
-# Ensure Docker Compose is running
-docker compose up -d
-
-# Check logs
-docker compose logs postgres
+```powershell
+docker compose down
+docker compose up --build
 ```
 
-### Gradle Build Out of Memory
-Add to `gradle.properties`:
-```
-org.gradle.jvmargs=-Xmx2g
-```
+### Gateway route returns 404 in Docker
 
----
+Make sure you are using the gateway on `8080` and that the stack has fully started. The gateway uses the `docker` profile in Compose and routes to container hostnames.
 
-## Contributing
+### Swagger does not open
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-change`
-3. Commit with conventional commits: `git commit -m "feat: add X"`
-4. Push: `git push origin feature/my-change`
-5. Open a Pull Request
+Try the service-specific URL directly:
 
-**Commit Message Format:**
-```
-feat: add new feature
-fix: resolve bug
-docs: update documentation
-refactor: improve code quality
-test: add tests
-```
-
----
-
-## License
-
-This project is for educational purposes. Feel free to use and modify as needed.
+- `http://localhost:8081/swagger-ui.html`
+- `http://localhost:8082/swagger-ui.html`
+- `http://localhost:8083/swagger-ui.html`
+- `http://localhost:8084/swagger-ui.html`
 
 ---
 
 ## Author
 
-**Aarush Patel** — 2026
+**Aarush Patel**  
+2026
