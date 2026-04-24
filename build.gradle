@@ -38,3 +38,9 @@ subprojects {
         useJUnitPlatform()
     }
 }
+
+tasks.register('buildAllJars') {
+    group = 'build'
+    description = 'Builds bootable JARs for all services.'
+    dependsOn subprojects.collect { "${it.path}:bootJar" }
+}

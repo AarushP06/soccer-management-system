@@ -40,3 +40,12 @@ springdoc:
     path: /swagger-ui.html
 
 # Removed API tokens for local development; seeds are used when tokens are absent
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  jpa:
+    hibernate:
+      ddl-auto: update

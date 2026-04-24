@@ -1,5 +1,24 @@
-# runtime-only Dockerfile: expect a pre-built jar at stadium-service/build/libs
+FROM eclipse-temurin:17-jdk AS builder
+
+WORKDIR /workspace
+
+COPY gradlew gradlew
+COPY gradle gradle
+COPY settings.gradle build.gradle ./
+COPY api-gateway api-gateway
+COPY match-service match-service
+COPY league-service league-service
+COPY team-service team-service
+COPY stadium-service stadium-service
+
+RUN chmod +x gradlew && ./gradlew --no-daemon :stadium-service:bootJar
+
 FROM eclipse-temurin:17-jre
-COPY stadium-service/build/libs/*.jar /app/app.jar
+
+WORKDIR /app
+
+COPY --from=builder /workspace/stadium-service/build/libs/*.jar app.jar
+
 EXPOSE 8084
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
