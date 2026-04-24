@@ -38,3 +38,5 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+# Removed API tokens for local development; seeds are used when tokens are absent

@@ -1,6 +1,7 @@
 package com.example.soccermanagement.match.infrastructure.integration;
 
 import com.example.soccermanagement.match.application.dto.LeagueInfo;
+import com.example.soccermanagement.match.application.exception.ExternalServiceException;
 import com.example.soccermanagement.match.application.port.LeagueLookupPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class LeagueServiceClient implements LeagueLookupPort {
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return false;
             return false;
         } catch (Exception ex) {
-            return false;
+            throw new ExternalServiceException("League service unavailable", ex);
         }
     }
 
@@ -45,7 +46,7 @@ public class LeagueServiceClient implements LeagueLookupPort {
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return Optional.empty();
             return Optional.empty();
         } catch (Exception ex) {
-            return Optional.empty();
+            throw new ExternalServiceException("League service unavailable", ex);
         }
     }
 
@@ -59,22 +60,32 @@ public class LeagueServiceClient implements LeagueLookupPort {
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return Optional.empty();
             return Optional.empty();
         } catch (Exception ex) {
-            return Optional.empty();
+            throw new ExternalServiceException("League service unavailable", ex);
         }
     }
 
     @Override
     public Optional<com.example.soccermanagement.match.application.dto.LeagueInfo> findByName(String name) {
         try {
-            ResponseEntity<LeagueDto[]> resp = restTemplate.getForEntity(baseUrl + "/api/leagues?name={name}", LeagueDto[].class, name);
+            ResponseEntity<LeagueDto[]> resp = restTemplate.getForEntity(baseUrl + "/api/leagues", LeagueDto[].class);
             LeagueDto[] arr = resp.getBody();
             if (arr == null || arr.length == 0) return Optional.empty();
-            LeagueDto first = arr[0];
-            return Optional.of(new LeagueInfo(UUID.fromString(first.getId()), first.getName(), first.getExternalCode()));
+            for (LeagueDto dto : arr) {
+                if (dto == null || dto.getName() == null) continue;
+                if (dto.getName().equalsIgnoreCase(name)) {
+                    try {
+                        return Optional.of(new LeagueInfo(UUID.fromString(dto.getId()), dto.getName(), dto.getExternalCode()));
+                    } catch (Exception ex) {
+                        // id might be numeric; return with random UUID placeholder
+                        return Optional.of(new LeagueInfo(UUID.randomUUID(), dto.getName(), dto.getExternalCode()));
+                    }
+                }
+            }
+            return Optional.empty();
         } catch (HttpClientErrorException ex) {
             return Optional.empty();
         } catch (Exception ex) {
-            return Optional.empty();
+            throw new ExternalServiceException("League service unavailable", ex);
         }
     }
 

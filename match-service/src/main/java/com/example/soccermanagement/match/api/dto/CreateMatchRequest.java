@@ -1,8 +1,5 @@
 package com.example.soccermanagement.match.api.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
-import java.util.UUID;
-
-public record CreateMatchRequest(@NotNull UUID leagueId, @NotNull UUID homeTeamId, @NotNull UUID awayTeamId, @NotNull UUID stadiumId) {}
-
+public record CreateMatchRequest(@NotBlank String leagueId, @NotBlank String homeTeamId, @NotBlank String awayTeamId, @NotBlank String stadiumId) {}

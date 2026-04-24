@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,10 +49,27 @@ public class TeamController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
-    @PostMapping("/import/competition/{code}")
-    @Operation(summary = "Import teams for a competition", description = "Import teams from football-data.org for a given competition code. Example codes: PL, PPL")
-    public ResponseEntity<TeamImportSummary> importTeams(@Parameter(description = "Competition code (example: PL)", example = "PL") @PathVariable String code) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(importService.importTeamsByCompetitionCode(code));
+    @PostMapping("/bulk")
+    @Operation(summary = "Bulk create teams", description = "Create multiple teams in a single request")
+    public ResponseEntity<List<TeamResponse>> bulkCreate(@Valid @RequestBody List<CreateTeamRequest> requests) {
+        var created = new ArrayList<TeamResponse>();
+        var existing = service.getAll();
+        for (var r : requests) {
+            try {
+                created.add(service.create(r));
+            } catch (com.example.soccermanagement.team.application.exception.TeamConflictException ex) {
+                var found = existing.stream().filter(t -> t.name().equalsIgnoreCase(r.name())).findFirst();
+                found.ifPresent(f -> created.add(f));
+            }
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping("/import/local")
+    @Operation(summary = "Import teams from local JSON data", description = "Import teams from src/main/resources/data/teams.json. Each team record may include an explicit UUID 'id' to keep stable ids. Duplicates (by name) are skipped.",
+            responses = {})
+    public ResponseEntity<TeamImportSummary> importLocalTeams() {
+        return ResponseEntity.status(HttpStatus.CREATED).body(importService.importFromLocal());
     }
 
     @PutMapping("/{id}")
@@ -67,4 +85,3 @@ public class TeamController {
         return ResponseEntity.noContent().build();
     }
 }
-

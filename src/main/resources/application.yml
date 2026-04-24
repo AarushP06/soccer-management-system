@@ -10,13 +10,14 @@ spring:
   flyway:
     enabled: true
 
-football-data:
-  base-url: https://api.football-data.org/v4
-  api-token: ffa4e22865b34b5396c8da9fd68bb360
+# Removed external API tokens to avoid requiring them for local development
+# football-data:
+#   base-url: https://api.football-data.org/v4
+#   api-token: <removed>
 
-api-football:
-  base-url: https://v3.football.api-sports.io
-  api-key: eca77528b9ca23928a83efc20e3c0b21
+# api-football:
+#   base-url: https://v3.football.api-sports.io
+#   api-key: <removed>
 
 springdoc:
   swagger-ui:

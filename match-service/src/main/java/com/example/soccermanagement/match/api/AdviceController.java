@@ -21,9 +21,19 @@ public class AdviceController {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
-    @ExceptionHandler({MatchImportException.class, ExternalServiceException.class})
+    @ExceptionHandler({MatchImportException.class})
     public ResponseEntity<String> handleImportErrors(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<String> handleExternalService(ExternalServiceException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body("Upstream service unavailable: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(com.example.soccermanagement.match.application.exception.RelatedEntityNotFoundException.class)
+    public ResponseEntity<String> handleRelatedNotFound(RuntimeException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
     @ExceptionHandler(com.example.soccermanagement.match.domain.exception.MatchValidationException.class)

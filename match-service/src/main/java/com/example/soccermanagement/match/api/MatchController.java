@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -61,14 +62,49 @@ public class MatchController {
         return ResponseEntity.status(HttpStatus.CREATED).body(matchApplicationService.create(request));
     }
 
-    @PostMapping("/import/competition/{code}")
-    @Operation(summary = "Import matches for a competition", description = "Import matches for a competition code and assign them to a local stadium. Example code: PPL")
-    public ResponseEntity<MatchImportSummary> importMatches(
-            @Parameter(description = "Competition code (example: PPL)", example = "PPL") @PathVariable String code,
-            @Parameter(description = "Local stadiumId to assign imported matches to", example = "33333333-3333-3333-3333-333333333333") @RequestParam UUID stadiumId
+    @PostMapping("/bulk")
+    @Operation(summary = "Bulk create matches", description = "Create multiple matches in a single request")
+    public ResponseEntity<List<MatchResponse>> bulkCreate(@Valid @RequestBody List<CreateMatchRequest> requests) {
+        var created = new ArrayList<MatchResponse>();
+
+        for (var request : requests) {
+            try {
+                created.add(matchApplicationService.create(request));
+            } catch (com.example.soccermanagement.match.application.exception.MatchConflictException ex) {
+                try {
+                    final UUID leagueUuid = request.leagueId() == null || request.leagueId().isBlank()
+                            ? null
+                            : UUID.fromString(request.leagueId());
+
+                    final UUID homeUuid = UUID.fromString(request.homeTeamId());
+                    final UUID awayUuid = UUID.fromString(request.awayTeamId());
+
+                    var found = matchApplicationService.getAll().stream()
+                            .filter(match ->
+                                    match.homeTeamId().equals(homeUuid)
+                                            && match.awayTeamId().equals(awayUuid)
+                                            && (leagueUuid == null || match.leagueId().equals(leagueUuid))
+                            )
+                            .findFirst();
+
+                    found.ifPresent(created::add);
+                } catch (Exception ignored) {
+                    // Continue with the next request
+                }
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping("/import/local")
+    @Operation(summary = "Import matches from local JSON data", description = "Import matches from src/main/resources/data/matches.json and assign them to a local stadium. Each match entry should include league (name), homeTeam (name), awayTeam (name). Returns a summary with imported/skipped counts.",
+            responses = {})
+    public ResponseEntity<MatchImportSummary> importLocalMatches(
+            @Parameter(description = "Local stadiumId to assign imported matches to", example = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") @RequestParam UUID stadiumId
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(matchImportService.importMatchesByCompetitionCode(code, stadiumId));
+                .body(matchImportService.importMatchesFromLocal(stadiumId));
     }
 
     @DeleteMapping("/{id}")
@@ -77,5 +113,10 @@ public class MatchController {
         matchApplicationService.delete(id);
         return ResponseEntity.noContent().build();
     }
-}
 
+    @PutMapping("/{id}")
+    @Operation(summary = "Update a match", description = "Update match fields (currently status)")
+    public ResponseEntity<MatchResponse> update(@PathVariable UUID id, @Valid @RequestBody com.example.soccermanagement.match.api.dto.UpdateMatchRequest request) {
+        return ResponseEntity.ok(matchApplicationService.update(id, request));
+    }
+}

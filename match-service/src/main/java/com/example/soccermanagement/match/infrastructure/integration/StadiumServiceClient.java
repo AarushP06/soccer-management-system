@@ -1,5 +1,6 @@
 package com.example.soccermanagement.match.infrastructure.integration;
 
+import com.example.soccermanagement.match.application.exception.ExternalServiceException;
 import com.example.soccermanagement.match.application.port.StadiumLookupPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class StadiumServiceClient implements StadiumLookupPort {
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return false;
             return false;
         } catch (Exception ex) {
-            return false;
+            throw new ExternalServiceException("Stadium service unavailable", ex);
         }
     }
 
@@ -44,7 +45,7 @@ public class StadiumServiceClient implements StadiumLookupPort {
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return Optional.empty();
             return Optional.empty();
         } catch (Exception ex) {
-            return Optional.empty();
+            throw new ExternalServiceException("Stadium service unavailable", ex);
         }
     }
 
@@ -58,7 +59,7 @@ public class StadiumServiceClient implements StadiumLookupPort {
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return Optional.empty();
             return Optional.empty();
         } catch (Exception ex) {
-            return Optional.empty();
+            throw new ExternalServiceException("Stadium service unavailable", ex);
         }
     }
 

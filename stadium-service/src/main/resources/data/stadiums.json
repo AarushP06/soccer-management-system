@@ -1,0 +1,5 @@
+[
+  { "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "name": "Old Trafford", "externalVenueId": 1, "city": "Manchester", "country": "England", "capacity": 74879 },
+  { "id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", "name": "Anfield", "externalVenueId": 2, "city": "Liverpool", "country": "England", "capacity": 54074 }
+]
+

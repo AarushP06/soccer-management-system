@@ -6,14 +6,15 @@ import com.example.soccermanagement.stadium.api.dto.StadiumResponse;
 import com.example.soccermanagement.stadium.application.StadiumApplicationService;
 import com.example.soccermanagement.stadium.application.StadiumImportService;
 import com.example.soccermanagement.stadium.application.StadiumBulkImportService;
+import com.example.soccermanagement.stadium.application.exception.StadiumConflictException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +27,11 @@ public class StadiumController {
     private final StadiumImportService importService;
     private final StadiumBulkImportService bulkImportService;
 
-    public StadiumController(StadiumApplicationService service, StadiumImportService importService, StadiumBulkImportService bulkImportService) {
+    public StadiumController(
+            StadiumApplicationService service,
+            StadiumImportService importService,
+            StadiumBulkImportService bulkImportService
+    ) {
         this.service = service;
         this.importService = importService;
         this.bulkImportService = bulkImportService;
@@ -50,22 +55,43 @@ public class StadiumController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(request));
     }
 
-    @PostMapping("/import/venue/{venueId}")
-    @Operation(summary = "Import stadium by external venue id", description = "Import a stadium using an external API-Football venue id. Example: 670")
-    public ResponseEntity<StadiumResponse> importVenue(@Parameter(description = "External API-Football venue id", example = "670") @PathVariable Integer venueId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(importService.importVenueByVenueId(venueId));
+    @PostMapping("/bulk")
+    @Operation(summary = "Bulk create stadiums", description = "Create multiple stadiums in a single request")
+    public ResponseEntity<List<StadiumResponse>> bulkCreate(@Valid @RequestBody List<CreateStadiumRequest> requests) {
+        var result = new ArrayList<StadiumResponse>();
+
+        for (var request : requests) {
+            try {
+                var created = service.create(request);
+                result.add(created);
+            } catch (StadiumConflictException ex) {
+                var found = service.getAll().stream()
+                        .filter(stadium -> stadium.name().equalsIgnoreCase(request.name()))
+                        .findFirst();
+
+                found.ifPresent(result::add);
+            }
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
-    @PostMapping("/import/league/{leagueId}/season/{season}")
-    @Operation(summary = "Bulk import stadiums from teams in a league", description = "Import stadiums discovered via API-Football teams for a given league and season. Creates stadiums only if they don't already exist locally.")
-    public ResponseEntity<StadiumBulkImportService.StadiumBulkImportSummary> importFromLeague(@Parameter(description = "API-Football league id (integer)", example = "140") @PathVariable Integer leagueId, @Parameter(description = "Season year (integer)", example = "2026") @PathVariable Integer season) {
-        var summary = bulkImportService.importFromLeagueTeams(leagueId, season);
+    @PostMapping("/import/local")
+    @Operation(
+            summary = "Import stadiums from local JSON data",
+            description = "Import stadiums from src/main/resources/data/stadiums.json. Each record may include an explicit UUID id and optional externalVenueId metadata. Duplicates by name are skipped."
+    )
+    public ResponseEntity<StadiumBulkImportService.StadiumBulkImportSummary> importLocal() {
+        var summary = bulkImportService.importFromLocal();
         return ResponseEntity.status(HttpStatus.CREATED).body(summary);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Update a stadium", description = "Update a stadium's name or metadata")
-    public ResponseEntity<StadiumResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateStadiumRequest request) {
+    public ResponseEntity<StadiumResponse> update(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateStadiumRequest request
+    ) {
         return ResponseEntity.ok(service.update(id, request));
     }
 
@@ -76,4 +102,3 @@ public class StadiumController {
         return ResponseEntity.noContent().build();
     }
 }
-

@@ -1,6 +1,7 @@
 package com.example.soccermanagement.match.infrastructure.integration;
 
 import com.example.soccermanagement.match.application.dto.TeamInfo;
+import com.example.soccermanagement.match.application.exception.ExternalServiceException;
 import com.example.soccermanagement.match.application.port.TeamLookupPort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class TeamServiceClient implements TeamLookupPort {
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return false;
             return false;
         } catch (Exception ex) {
-            return false;
+            throw new ExternalServiceException("Team service unavailable", ex);
         }
     }
 
@@ -41,8 +42,11 @@ public class TeamServiceClient implements TeamLookupPort {
             ResponseEntity<TeamDto> resp = restTemplate.getForEntity(baseUrl + "/api/teams/{id}", TeamDto.class, teamId);
             TeamDto body = resp.getBody();
             return body == null ? Optional.empty() : Optional.ofNullable(body.getName());
-        } catch (Exception ex) {
+        } catch (HttpClientErrorException ex) {
+            if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return Optional.empty();
             return Optional.empty();
+        } catch (Exception ex) {
+            throw new ExternalServiceException("Team service unavailable", ex);
         }
     }
 
@@ -53,7 +57,7 @@ public class TeamServiceClient implements TeamLookupPort {
             TeamDto body = resp.getBody();
             return body == null ? Optional.empty() : Optional.ofNullable(body.getExternalId());
         } catch (Exception ex) {
-            return Optional.empty();
+            throw new ExternalServiceException("Team service unavailable", ex);
         }
     }
 
@@ -66,7 +70,7 @@ public class TeamServiceClient implements TeamLookupPort {
             TeamDto first = arr[0];
             return Optional.of(new TeamInfo(UUID.fromString(first.getId()), first.getName(), first.getExternalId()));
         } catch (Exception ex) {
-            return Optional.empty();
+            throw new ExternalServiceException("Team service unavailable", ex);
         }
     }
 
