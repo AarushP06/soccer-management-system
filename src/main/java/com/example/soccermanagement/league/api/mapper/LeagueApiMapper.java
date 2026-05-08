@@ -3,6 +3,9 @@ package com.example.soccermanagement.league.api.mapper;
 import com.example.soccermanagement.league.api.dto.LeagueResponse;
 import com.example.soccermanagement.league.domain.League;
 
+/**
+ * Converts between internal models and transport-friendly data structures.
+ */
 public final class LeagueApiMapper {
 
     private LeagueApiMapper() {

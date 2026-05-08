@@ -51,6 +51,10 @@ services:
       dockerfile: api-gateway/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      MATCH_SERVICE_URL: http://match-service:8081
+      LEAGUE_SERVICE_URL: http://league-service:8082
+      TEAM_SERVICE_URL: http://team-service:8083
+      STADIUM_SERVICE_URL: http://stadium-service:8084
     ports:
       - "8080:8080"
     depends_on:
@@ -70,6 +74,9 @@ services:
       DB_USER: postgres
       DB_PASSWORD: password
       SPRING_PROFILES_ACTIVE: docker
+      LEAGUE_SERVICE_URL: http://league-service:8082
+      TEAM_SERVICE_URL: http://team-service:8083
+      STADIUM_SERVICE_URL: http://stadium-service:8084
     ports:
       - "8081:8081"
     depends_on:

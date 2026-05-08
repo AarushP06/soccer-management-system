@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
+/**
+ * Coordinates application use cases and cross-component workflow for match operations.
+ */
 @Service
 public class MatchOrchestrationService {
 

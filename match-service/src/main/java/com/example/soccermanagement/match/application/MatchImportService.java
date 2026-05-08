@@ -10,6 +10,7 @@ import com.example.soccermanagement.match.application.port.LeagueLookupPort;
 import com.example.soccermanagement.match.application.port.TeamLookupPort;
 import com.example.soccermanagement.match.application.port.StadiumLookupPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,9 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Handles import workflow, validation, and result tracking for the match service.
+ */
 @Service
 public class MatchImportService {
     private final FootballDataMatchClient footballDataMatchClient;
@@ -131,18 +135,20 @@ public class MatchImportService {
                 int missingTeams = 0;
                 int missingLeague = 0;
                 for (LocalMatchDto dto : arr) {
-                    if (dto == null || dto.homeTeam == null || dto.awayTeam == null || dto.homeTeam.isBlank() || dto.awayTeam.isBlank()) {
+                    String homeTeamName = dto == null ? null : dto.homeTeamName();
+                    String awayTeamName = dto == null ? null : dto.awayTeamName();
+                    if (dto == null || homeTeamName == null || awayTeamName == null || homeTeamName.isBlank() || awayTeamName.isBlank()) {
                         skipped++; continue;
                     }
-                    var homeOpt = teamLookupPort.findByName(dto.homeTeam.trim());
-                    var awayOpt = teamLookupPort.findByName(dto.awayTeam.trim());
+                    var homeOpt = teamLookupPort.findByName(homeTeamName.trim());
+                    var awayOpt = teamLookupPort.findByName(awayTeamName.trim());
                     if (homeOpt.isEmpty() || awayOpt.isEmpty()) {
                         missingTeams++; skipped++; continue;
                     }
                     UUID homeTeamId = homeOpt.get().id();
                     UUID awayTeamId = awayOpt.get().id();
                     // league lookup
-                    var leagueOpt = leagueLookupPort.findByName(dto.league == null ? "" : dto.league.trim());
+                    var leagueOpt = leagueLookupPort.findByName(dto.leagueName() == null ? "" : dto.leagueName().trim());
                     if (leagueOpt.isEmpty()) { missingLeague++; skipped++; continue; }
                     UUID leagueId = leagueOpt.get().id();
                     if (matchRepository.existsByLeagueAndTeams(leagueId, homeTeamId, awayTeamId)) { skipped++; continue; }
@@ -161,5 +167,26 @@ public class MatchImportService {
         }
     }
 
-    private static class LocalMatchDto { public String league; public String homeTeam; public String awayTeam; public String externalId; }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private static class LocalMatchDto {
+        public String league;
+        public String leagueName;
+        public String homeTeam;
+        public String homeTeamName;
+        public String awayTeam;
+        public String awayTeamName;
+        public String externalId;
+
+        private String leagueName() {
+            return league != null ? league : leagueName;
+        }
+
+        private String homeTeamName() {
+            return homeTeam != null ? homeTeam : homeTeamName;
+        }
+
+        private String awayTeamName() {
+            return awayTeam != null ? awayTeam : awayTeamName;
+        }
+    }
 }

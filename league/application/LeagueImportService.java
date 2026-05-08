@@ -22,6 +22,9 @@ package league.application;
     private final LeagueRepository leagueRepository;
     private final FootballDataLeagueClient footballDataLeagueClient;
 
+/**
+ * Handles import workflow, validation, and result tracking for the application service.
+ */
 public class LeagueImportService {
 @Service
 

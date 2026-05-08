@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Applies additional environment configuration before the application starts.
+ */
 public class DotenvEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
     private static final String DOTENV = ".env";
 

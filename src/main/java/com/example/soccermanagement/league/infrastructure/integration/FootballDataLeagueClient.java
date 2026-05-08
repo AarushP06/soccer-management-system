@@ -6,6 +6,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Calls downstream or external services needed by the league service.
+ */
 @Component
 public class FootballDataLeagueClient {
 

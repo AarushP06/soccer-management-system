@@ -5,6 +5,9 @@ import com.example.soccermanagement.league.domain.League;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+/**
+ * Loads seed or import data used by the league service.
+ */
 @Component
 public class LeagueDataLoader implements CommandLineRunner {
 

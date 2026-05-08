@@ -57,13 +57,13 @@ spring:
 
 services:
   match:
-    url: http://localhost:8081
+    url: ${MATCH_SERVICE_URL:http://localhost:8081}
   league:
-    url: http://localhost:8082
+    url: ${LEAGUE_SERVICE_URL:http://localhost:8082}
   team:
-    url: http://localhost:8083
+    url: ${TEAM_SERVICE_URL:http://localhost:8083}
   stadium:
-    url: http://localhost:8084
+    url: ${STADIUM_SERVICE_URL:http://localhost:8084}
 
 # springdoc OpenAPI settings
 springdoc:
@@ -73,19 +73,3 @@ springdoc:
     path: /swagger-ui.html
 
 # Removed API tokens for local development; gateways do not require external API keys
-
----
-spring:
-  config:
-    activate:
-      on-profile: docker
-
-services:
-  match:
-    url: http://match-service:8081
-  league:
-    url: http://league-service:8082
-  team:
-    url: http://team-service:8083
-  stadium:
-    url: http://stadium-service:8084

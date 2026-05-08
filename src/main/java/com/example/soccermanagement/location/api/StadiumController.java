@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Exposes HTTP endpoints for stadium operations.
+ */
 @RestController
 @RequestMapping("/api/stadiums")
 @Tag(name = "Stadium", description = "Stadium CRUD and import operations")

@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Maps application and domain exceptions to HTTP responses.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

@@ -2,6 +2,9 @@ package com.example.soccermanagement.match.api.dto;
 
 import java.util.UUID;
 
+/**
+ * Represents outgoing API data for the match service.
+ */
 public record MatchResponse(
         UUID id,
         UUID leagueId,

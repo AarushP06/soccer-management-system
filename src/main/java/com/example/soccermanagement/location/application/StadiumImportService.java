@@ -8,6 +8,9 @@ import com.example.soccermanagement.location.domain.Stadium;
 import com.example.soccermanagement.location.infrastructure.integration.ApiFootballVenueClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+/**
+ * Handles import workflow, validation, and result tracking for the stadium service.
+ */
 @Service
 public class StadiumImportService {
     private final ApiFootballVenueClient apiFootballVenueClient;

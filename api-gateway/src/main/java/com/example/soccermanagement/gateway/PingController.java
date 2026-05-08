@@ -7,6 +7,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
+/**
+ * Exposes a lightweight health endpoint for this service.
+ */
 @RestController
 @RequestMapping("/ping")
 public class PingController {

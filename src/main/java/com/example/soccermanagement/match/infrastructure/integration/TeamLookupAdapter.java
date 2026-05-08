@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Adapts downstream data access into the lookup port expected by the application layer.
+ */
 @Component
 public class TeamLookupAdapter implements TeamLookupPort {
 

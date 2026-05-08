@@ -5,7 +5,16 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "matches")
+@Table(
+        name = "matches",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_matches_league_home_away",
+                columnNames = {"leagueId", "homeTeamId", "awayTeamId"}
+        )
+)
+/**
+ * Represents the persistence model stored by the match service.
+ */
 public class MatchJpaEntity {
     @Id
     private UUID id;

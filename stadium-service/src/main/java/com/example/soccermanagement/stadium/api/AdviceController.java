@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+/**
+ * Maps application and domain exceptions to HTTP responses.
+ */
 @ControllerAdvice
 public class AdviceController {
 

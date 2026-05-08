@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Adapts the domain repository contract to the persistence implementation.
+ */
 @Component
 public class LeagueRepositoryAdapter implements LeagueRepository {
     private final SpringDataLeagueRepository springDataLeagueRepository;
@@ -26,6 +29,16 @@ public class LeagueRepositoryAdapter implements LeagueRepository {
     @Override
     public Optional<League> findById(Long id) {
         return springDataLeagueRepository.findById(id).map(e -> new League(e.getId(), e.getName()));
+    }
+
+    @Override
+    public Optional<League> findByName(String name) {
+        return springDataLeagueRepository.findByName(name).map(e -> new League(e.getId(), e.getName()));
+    }
+
+    @Override
+    public boolean existsByNameAndIdNot(String name, Long id) {
+        return springDataLeagueRepository.existsByNameAndIdNot(name, id);
     }
 
     @Override

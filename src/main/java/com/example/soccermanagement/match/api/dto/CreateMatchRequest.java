@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
+/**
+ * Represents incoming API data for a match request.
+ */
 public record CreateMatchRequest(
         @Schema(description = "Local league id", example = "11111111-1111-1111-1111-111111111111") @NotNull UUID leagueId,
         @Schema(description = "Local home team id", example = "22222222-2222-2222-2222-222222222221") @NotNull UUID homeTeamId,

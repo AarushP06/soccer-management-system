@@ -12,6 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 
+/**
+ * Handles import workflow, validation, and result tracking for the league service.
+ */
 @Service
 public class LeagueImportService {
     private final FootballDataLeagueClient footballDataLeagueClient;

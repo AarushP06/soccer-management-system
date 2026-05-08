@@ -2,6 +2,9 @@
 import league.application.LeagueImportService;
 // ...existing code...
 
+/**
+ * Exposes HTTP endpoints for application operations.
+ */
 @RestController
 @RequestMapping("/api/leagues")
 public class LeagueController {

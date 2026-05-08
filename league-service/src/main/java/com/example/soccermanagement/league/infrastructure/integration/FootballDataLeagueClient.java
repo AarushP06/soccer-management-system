@@ -15,6 +15,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.InputStream;
 
+/**
+ * Calls downstream or external services needed by the league service.
+ */
 @Component
 public class FootballDataLeagueClient {
     private final RestTemplate restTemplate = new RestTemplate();
@@ -57,6 +60,9 @@ public class FootballDataLeagueClient {
             HttpEntity<Void> entity = new HttpEntity<>(headers);
             return restTemplate.exchange(baseUrl + "/competitions/{code}", org.springframework.http.HttpMethod.GET, entity, CompetitionDto.class, code).getBody();
         } catch (HttpClientErrorException ex) {
+            if (ex.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                throw new ExternalApiRateLimitException("External API rate limit exceeded", ex);
+            }
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) {
                 throw new LeagueNotFoundException("External competition not found for code: " + code);
             }

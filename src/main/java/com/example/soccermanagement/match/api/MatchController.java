@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Exposes HTTP endpoints for match operations.
+ */
 @RestController
 @RequestMapping("/api/matches")
 @Tag(name = "Match", description = "Match CRUD, details and import operations")

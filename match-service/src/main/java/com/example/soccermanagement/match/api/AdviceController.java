@@ -6,9 +6,13 @@ import com.example.soccermanagement.match.application.exception.MatchConflictExc
 import com.example.soccermanagement.match.application.exception.MatchNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+/**
+ * Maps application and domain exceptions to HTTP responses.
+ */
 @ControllerAdvice
 public class AdviceController {
     @ExceptionHandler(MatchNotFoundException.class)
@@ -22,7 +26,10 @@ public class AdviceController {
     }
 
     @ExceptionHandler({MatchImportException.class})
-    public ResponseEntity<String> handleImportErrors(RuntimeException ex) {
+    public ResponseEntity<String> handleImportErrors(MatchImportException ex) {
+        if (isMissingResourceImportFailure(ex)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
     }
 
@@ -39,5 +46,22 @@ public class AdviceController {
     @ExceptionHandler(com.example.soccermanagement.match.domain.exception.MatchValidationException.class)
     public ResponseEntity<String> handleValidation(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<String> handleInvalidInput(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    private boolean isMissingResourceImportFailure(MatchImportException ex) {
+        String message = ex.getMessage();
+        if (message != null && message.contains("Stadium not found:")) {
+            return true;
+        }
+
+        Throwable cause = ex.getCause();
+        return cause instanceof MatchImportException
+                && cause.getMessage() != null
+                && cause.getMessage().contains("Stadium not found:");
     }
 }

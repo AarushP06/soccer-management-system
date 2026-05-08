@@ -16,6 +16,9 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Handles import workflow, validation, and result tracking for the team service.
+ */
 @Service
 public class TeamImportService {
 

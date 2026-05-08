@@ -4,6 +4,7 @@ import com.example.soccermanagement.match.application.dto.TeamInfo;
 import com.example.soccermanagement.match.application.exception.ExternalServiceException;
 import com.example.soccermanagement.match.application.port.TeamLookupPort;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -13,13 +14,19 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Calls downstream or external services needed by the match service.
+ */
 @Component
 public class TeamServiceClient implements TeamLookupPort {
     private final RestTemplate restTemplate;
     private final String baseUrl;
 
-    public TeamServiceClient(@Value("${services.team.url:http://localhost:8083}") String baseUrl) {
-        this.restTemplate = new RestTemplate();
+    public TeamServiceClient(
+            RestTemplateBuilder restTemplateBuilder,
+            @Value("${services.team.url:http://localhost:8083}") String baseUrl
+    ) {
+        this.restTemplate = restTemplateBuilder.build();
         this.baseUrl = baseUrl;
     }
 
@@ -56,6 +63,9 @@ public class TeamServiceClient implements TeamLookupPort {
             ResponseEntity<TeamDto> resp = restTemplate.getForEntity(baseUrl + "/api/teams/{id}", TeamDto.class, teamId);
             TeamDto body = resp.getBody();
             return body == null ? Optional.empty() : Optional.ofNullable(body.getExternalId());
+        } catch (HttpClientErrorException ex) {
+            if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return Optional.empty();
+            return Optional.empty();
         } catch (Exception ex) {
             throw new ExternalServiceException("Team service unavailable", ex);
         }

@@ -12,6 +12,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.io.InputStream;
 import java.util.List;
 
+/**
+ * Calls downstream or external services needed by the match service.
+ */
 @Component
 public class FootballDataMatchClient {
     private final WebClient webClient;

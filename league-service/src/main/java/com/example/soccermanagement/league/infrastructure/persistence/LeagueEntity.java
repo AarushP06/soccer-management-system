@@ -2,6 +2,9 @@ package com.example.soccermanagement.league.infrastructure.persistence;
 
 import jakarta.persistence.*;
 
+/**
+ * Represents the persistence model stored by the league service.
+ */
 @Entity
 @Table(name = "leagues")
 public class LeagueEntity {

@@ -2,5 +2,8 @@ package com.example.soccermanagement.match.api.dto;
 
 import java.util.UUID;
 
+/**
+ * Summarizes the result of an import or bulk operation in the match service.
+ */
 public record MatchImportSummary(String competitionCode, UUID stadiumId, int imported, int skipped, int missingTeams, int missingLeague) {}
 

@@ -1,5 +1,8 @@
 package com.example.soccermanagement.league.domain;
 
+/**
+ * Represents core domain behavior and rules for the league service.
+ */
 public class League {
     private Long id;
     private String name;

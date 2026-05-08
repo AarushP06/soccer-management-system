@@ -2,6 +2,9 @@ package com.example.soccermanagement.match.infrastructure.integration;
 import com.example.soccermanagement.shared.infrastructure.client.FootballDataBaseClient;
 import org.springframework.stereotype.Component;
 import java.util.List;
+/**
+ * Calls downstream or external services needed by the match service.
+ */
 @Component
 public class FootballDataMatchClient {
     private final FootballDataBaseClient client;

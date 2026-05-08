@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Defines an abstraction used by the application layer in the match service.
+ */
 public interface MatchRepository {
     List<Match> findAll();
     Optional<Match> findById(UUID id);

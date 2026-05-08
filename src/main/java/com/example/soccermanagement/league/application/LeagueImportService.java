@@ -10,6 +10,9 @@ import com.example.soccermanagement.league.infrastructure.integration.FootballDa
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Handles import workflow, validation, and result tracking for the league service.
+ */
 @Service
 public class LeagueImportService {
 

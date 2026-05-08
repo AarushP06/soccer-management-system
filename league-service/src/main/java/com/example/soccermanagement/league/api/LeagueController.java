@@ -16,6 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Exposes HTTP endpoints for league operations.
+ */
 @RestController
 @RequestMapping("/api/leagues")
 @Tag(name = "League API", description = "CRUD operations for leagues")
@@ -39,14 +42,12 @@ public class LeagueController {
     @PostMapping("/bulk")
     public ResponseEntity<List<LeagueResponse>> bulkCreate(@Valid @RequestBody List<LeagueRequest> requests) {
         List<LeagueResponse> result = new ArrayList<>();
-        var existing = leagueService.list();
         for (var r : requests) {
             try {
                 var created = leagueService.create(r.name());
                 result.add(new LeagueResponse(created.getId(), created.getName()));
             } catch (Exception ex) {
-                // on any conflict or error, try to return existing by name
-                var found = existing.stream().filter(l -> l.getName().equalsIgnoreCase(r.name())).findFirst();
+                var found = leagueService.findByName(r.name());
                 found.ifPresent(l -> result.add(new LeagueResponse(l.getId(), l.getName())));
             }
         }
@@ -71,9 +72,7 @@ public class LeagueController {
     @Operation(summary = "Update a league name")
     @PutMapping("/{id}")
     public ResponseEntity<LeagueResponse> update(@PathVariable Long id, @Valid @RequestBody LeagueRequest request) {
-        var existing = leagueService.getById(id);
-        existing.setName(request.name());
-        var saved = leagueService.create(existing.getName());
+        var saved = leagueService.update(id, request.name());
         return ResponseEntity.ok(new LeagueResponse(saved.getId(), saved.getName()));
     }
 

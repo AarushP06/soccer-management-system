@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Exposes HTTP endpoints for league operations.
+ */
 @RestController
 @RequestMapping("/api/leagues")
 @Tag(name = "League", description = "League CRUD and import operations")

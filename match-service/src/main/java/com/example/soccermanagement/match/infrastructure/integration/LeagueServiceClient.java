@@ -4,6 +4,7 @@ import com.example.soccermanagement.match.application.dto.LeagueInfo;
 import com.example.soccermanagement.match.application.exception.ExternalServiceException;
 import com.example.soccermanagement.match.application.port.LeagueLookupPort;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -13,20 +14,30 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Calls downstream or external services needed by the match service.
+ */
 @Component
 public class LeagueServiceClient implements LeagueLookupPort {
     private final RestTemplate restTemplate;
     private final String baseUrl;
 
-    public LeagueServiceClient(@Value("${services.league.url:http://localhost:8082}") String baseUrl) {
-        this.restTemplate = new RestTemplate();
+    public LeagueServiceClient(
+            RestTemplateBuilder restTemplateBuilder,
+            @Value("${services.league.url:http://localhost:8082}") String baseUrl
+    ) {
+        this.restTemplate = restTemplateBuilder.build();
         this.baseUrl = baseUrl;
     }
 
     @Override
     public boolean existsById(UUID leagueId) {
         try {
-            ResponseEntity<LeagueDto> resp = restTemplate.getForEntity(baseUrl + "/api/leagues/{id}", LeagueDto.class, leagueId);
+            Long serviceId = LeagueReferenceMapper.toLeagueServiceId(leagueId).orElse(null);
+            if (serviceId == null) {
+                return false;
+            }
+            ResponseEntity<LeagueDto> resp = restTemplate.getForEntity(baseUrl + "/api/leagues/{id}", LeagueDto.class, serviceId);
             return resp.getStatusCode() == HttpStatus.OK && resp.getBody() != null;
         } catch (HttpClientErrorException ex) {
             if (ex.getStatusCode() == HttpStatus.NOT_FOUND) return false;
@@ -39,7 +50,11 @@ public class LeagueServiceClient implements LeagueLookupPort {
     @Override
     public Optional<String> findNameById(UUID leagueId) {
         try {
-            ResponseEntity<LeagueDto> resp = restTemplate.getForEntity(baseUrl + "/api/leagues/{id}", LeagueDto.class, leagueId);
+            Long serviceId = LeagueReferenceMapper.toLeagueServiceId(leagueId).orElse(null);
+            if (serviceId == null) {
+                return Optional.empty();
+            }
+            ResponseEntity<LeagueDto> resp = restTemplate.getForEntity(baseUrl + "/api/leagues/{id}", LeagueDto.class, serviceId);
             LeagueDto body = resp.getBody();
             return body == null ? Optional.empty() : Optional.ofNullable(body.getName());
         } catch (HttpClientErrorException ex) {
@@ -53,7 +68,11 @@ public class LeagueServiceClient implements LeagueLookupPort {
     @Override
     public Optional<String> findExternalCodeById(UUID leagueId) {
         try {
-            ResponseEntity<LeagueDto> resp = restTemplate.getForEntity(baseUrl + "/api/leagues/{id}", LeagueDto.class, leagueId);
+            Long serviceId = LeagueReferenceMapper.toLeagueServiceId(leagueId).orElse(null);
+            if (serviceId == null) {
+                return Optional.empty();
+            }
+            ResponseEntity<LeagueDto> resp = restTemplate.getForEntity(baseUrl + "/api/leagues/{id}", LeagueDto.class, serviceId);
             LeagueDto body = resp.getBody();
             return body == null ? Optional.empty() : Optional.ofNullable(body.getExternalCode());
         } catch (HttpClientErrorException ex) {
@@ -74,10 +93,13 @@ public class LeagueServiceClient implements LeagueLookupPort {
                 if (dto == null || dto.getName() == null) continue;
                 if (dto.getName().equalsIgnoreCase(name)) {
                     try {
-                        return Optional.of(new LeagueInfo(UUID.fromString(dto.getId()), dto.getName(), dto.getExternalCode()));
+                        return Optional.of(new LeagueInfo(
+                                LeagueReferenceMapper.toInternalUuid(Long.parseLong(dto.getId())),
+                                dto.getName(),
+                                dto.getExternalCode()
+                        ));
                     } catch (Exception ex) {
-                        // id might be numeric; return with random UUID placeholder
-                        return Optional.of(new LeagueInfo(UUID.randomUUID(), dto.getName(), dto.getExternalCode()));
+                        return Optional.empty();
                     }
                 }
             }

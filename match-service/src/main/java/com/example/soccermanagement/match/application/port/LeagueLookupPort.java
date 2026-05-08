@@ -3,6 +3,9 @@ package com.example.soccermanagement.match.application.port;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Defines an abstraction used by the application layer in the match service.
+ */
 public interface LeagueLookupPort {
     boolean existsById(UUID leagueId);
     Optional<String> findNameById(UUID leagueId);

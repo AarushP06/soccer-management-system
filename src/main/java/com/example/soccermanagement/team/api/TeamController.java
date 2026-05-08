@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Exposes HTTP endpoints for team operations.
+ */
 @RestController
 @RequestMapping("/api/teams")
 @Tag(name = "Team", description = "Team CRUD and import operations")

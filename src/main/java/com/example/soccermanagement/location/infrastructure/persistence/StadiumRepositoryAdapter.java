@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Adapts the domain repository contract to the persistence implementation.
+ */
 @Component
 public class StadiumRepositoryAdapter implements StadiumRepository {
 

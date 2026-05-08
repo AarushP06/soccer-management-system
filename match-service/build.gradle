@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
     id 'java'
+    id 'jacoco'
 }
 
 group = 'com.example.soccermanagement'
@@ -18,6 +19,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux' // added for WebClient
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // OpenAPI / Swagger UI for MVC
@@ -27,8 +29,26 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'com.h2database:h2'
 }
 
 springBoot {
     mainClass = 'com.example.soccermanagement.match.MatchServiceApplication'
+}
+
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }

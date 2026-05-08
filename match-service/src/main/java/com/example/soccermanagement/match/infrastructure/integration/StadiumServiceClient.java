@@ -3,6 +3,7 @@ package com.example.soccermanagement.match.infrastructure.integration;
 import com.example.soccermanagement.match.application.exception.ExternalServiceException;
 import com.example.soccermanagement.match.application.port.StadiumLookupPort;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -12,13 +13,19 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Calls downstream or external services needed by the match service.
+ */
 @Component
 public class StadiumServiceClient implements StadiumLookupPort {
     private final RestTemplate restTemplate;
     private final String baseUrl;
 
-    public StadiumServiceClient(@Value("${services.stadium.url:http://localhost:8084}") String baseUrl) {
-        this.restTemplate = new RestTemplate();
+    public StadiumServiceClient(
+            RestTemplateBuilder restTemplateBuilder,
+            @Value("${services.stadium.url:http://localhost:8084}") String baseUrl
+    ) {
+        this.restTemplate = restTemplateBuilder.build();
         this.baseUrl = baseUrl;
     }
 

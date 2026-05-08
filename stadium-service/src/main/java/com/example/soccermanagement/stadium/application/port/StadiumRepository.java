@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Defines an abstraction used by the application layer in the stadium service.
+ */
 public interface StadiumRepository {
     List<Stadium> findAll();
     Optional<Stadium> findById(UUID id);

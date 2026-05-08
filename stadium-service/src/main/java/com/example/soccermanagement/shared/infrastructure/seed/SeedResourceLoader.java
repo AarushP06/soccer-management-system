@@ -6,6 +6,9 @@ import org.springframework.core.io.ClassPathResource;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Loads seed or import data used by the shared service.
+ */
 public final class SeedResourceLoader {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 

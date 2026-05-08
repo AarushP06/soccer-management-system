@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+/**
+ * Loads seed or import data used by the team service.
+ */
 @Component
 public class TeamDataLoader implements CommandLineRunner {
 

@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * Exposes a lightweight health endpoint for this service.
+ */
 @RestController
 @RequestMapping("/ping")
 public class PingController {

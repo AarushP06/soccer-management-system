@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Exposes HTTP endpoints for team operations.
+ */
 @RestController
 @RequestMapping("/api/teams")
 @Tag(name = "Team", description = "Team CRUD and import operations")
@@ -53,12 +56,11 @@ public class TeamController {
     @Operation(summary = "Bulk create teams", description = "Create multiple teams in a single request")
     public ResponseEntity<List<TeamResponse>> bulkCreate(@Valid @RequestBody List<CreateTeamRequest> requests) {
         var created = new ArrayList<TeamResponse>();
-        var existing = service.getAll();
         for (var r : requests) {
             try {
                 created.add(service.create(r));
             } catch (com.example.soccermanagement.team.application.exception.TeamConflictException ex) {
-                var found = existing.stream().filter(t -> t.name().equalsIgnoreCase(r.name())).findFirst();
+                var found = service.getAll().stream().filter(t -> t.name().equalsIgnoreCase(r.name())).findFirst();
                 found.ifPresent(f -> created.add(f));
             }
         }

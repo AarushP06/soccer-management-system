@@ -4,6 +4,9 @@ import com.example.soccermanagement.shared.domain.DomainException;
 
 import java.util.UUID;
 
+/**
+ * Represents core domain behavior and rules for the match service.
+ */
 public class Match {
 
     private final UUID id;

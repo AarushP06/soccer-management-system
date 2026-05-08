@@ -6,6 +6,9 @@ import jakarta.persistence.Table;
 
 import java.util.UUID;
 
+/**
+ * Represents the persistence model stored by the match service.
+ */
 @Entity
 @Table(name = "matches")
 public class MatchJpaEntity {

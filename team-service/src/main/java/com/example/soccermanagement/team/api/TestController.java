@@ -5,6 +5,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Exposes utility endpoints used to exercise test and error scenarios.
+ */
 @RestController
 @RequestMapping("/test")
 public class TestController {

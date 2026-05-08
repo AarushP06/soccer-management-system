@@ -9,6 +9,9 @@ import org.springframework.web.client.RestClientResponseException;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Calls downstream or external services needed by the stadium service.
+ */
 @Component
 public class ApiFootballVenueClient {
     private final RestClient restClient;

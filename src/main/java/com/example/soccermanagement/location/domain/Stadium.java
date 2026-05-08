@@ -4,6 +4,9 @@ import com.example.soccermanagement.shared.domain.DomainException;
 
 import java.util.UUID;
 
+/**
+ * Represents core domain behavior and rules for the stadium service.
+ */
 public class Stadium {
 
     private final UUID id;

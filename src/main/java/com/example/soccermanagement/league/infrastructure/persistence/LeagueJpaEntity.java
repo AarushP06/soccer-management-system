@@ -6,6 +6,9 @@ import jakarta.persistence.Table;
 
 import java.util.UUID;
 
+/**
+ * Represents the persistence model stored by the league service.
+ */
 @Entity
 @Table(name = "leagues")
 public class LeagueJpaEntity {

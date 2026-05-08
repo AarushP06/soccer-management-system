@@ -3,6 +3,9 @@ package com.example.soccermanagement.team.infrastructure.integration;
 import com.example.soccermanagement.shared.infrastructure.client.FootballDataBaseClient;
 import org.springframework.stereotype.Component;
 
+/**
+ * Calls downstream or external services needed by the team service.
+ */
 @Component
 public class FootballDataTeamClient {
 

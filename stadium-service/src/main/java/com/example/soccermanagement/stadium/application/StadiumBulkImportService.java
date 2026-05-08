@@ -13,6 +13,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Handles import workflow, validation, and result tracking for the stadium service.
+ */
 @Service
 public class StadiumBulkImportService {
     private final ApiFootballVenueClient apiFootballVenueClient;

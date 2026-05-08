@@ -3,6 +3,9 @@ package com.example.soccermanagement.location.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
+/**
+ * Represents outgoing API data for the stadium service.
+ */
 public record StadiumResponse(
         @Schema(description = "Local stadium id", example = "33333333-3333-3333-3333-333333333333") UUID id,
         @Schema(description = "Local stadium name", example = "Estádio da Luz") String name,

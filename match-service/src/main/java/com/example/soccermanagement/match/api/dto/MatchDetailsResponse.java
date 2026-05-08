@@ -4,6 +4,9 @@ import org.springframework.hateoas.RepresentationModel;
 
 import java.util.UUID;
 
+/**
+ * Represents outgoing API data for the match service.
+ */
 public class MatchDetailsResponse extends RepresentationModel<MatchDetailsResponse> {
     private UUID id;
     private UUID leagueId;

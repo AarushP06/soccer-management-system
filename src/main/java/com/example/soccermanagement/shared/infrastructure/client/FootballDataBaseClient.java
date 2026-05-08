@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
+/**
+ * Calls downstream or external services needed by the shared service.
+ */
 @Component
 public class FootballDataBaseClient {
 

@@ -52,8 +52,8 @@ spring:
 
 services:
   league:
-    url: http://league-service:8082
+    url: ${LEAGUE_SERVICE_URL:http://localhost:8082}
   team:
-    url: http://team-service:8083
+    url: ${TEAM_SERVICE_URL:http://localhost:8083}
   stadium:
-    url: http://stadium-service:8084
+    url: ${STADIUM_SERVICE_URL:http://localhost:8084}

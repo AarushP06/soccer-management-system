@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot'
     id 'io.spring.dependency-management'
     id 'java'
+    id 'jacoco'
 }
 
 group = 'com.example.soccermanagement'
@@ -27,4 +28,21 @@ dependencies {
 // prevent bootJar from repackaging subprojects when running from root
 springBoot {
     mainClass = 'com.example.soccermanagement.gateway.GatewayApplication'
+}
+
+jacoco {
+    toolVersion = '0.8.11'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }

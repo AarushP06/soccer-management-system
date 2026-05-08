@@ -13,6 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
+/**
+ * Handles import workflow, validation, and result tracking for the match service.
+ */
 @Service
 public class MatchImportService {
     private final FootballDataMatchClient footballDataMatchClient;

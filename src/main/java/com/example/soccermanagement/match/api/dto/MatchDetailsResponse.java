@@ -5,6 +5,9 @@ import org.springframework.hateoas.RepresentationModel;
 
 import java.util.UUID;
 
+/**
+ * Represents outgoing API data for the match service.
+ */
 public class MatchDetailsResponse extends RepresentationModel<MatchDetailsResponse> {
 
     @Schema(description = "Local match id", example = "44444444-4444-4444-4444-444444444444")

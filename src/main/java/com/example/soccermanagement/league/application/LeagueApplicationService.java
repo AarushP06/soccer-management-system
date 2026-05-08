@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Coordinates application use cases and cross-component workflow for league operations.
+ */
 @Service
 public class LeagueApplicationService {
 

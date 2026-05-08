@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Defines an abstraction used by the application layer in the team service.
+ */
 public interface TeamRepository {
     List<Team> findAll();
     Optional<Team> findById(UUID id);

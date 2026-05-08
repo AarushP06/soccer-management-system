@@ -3,6 +3,9 @@ package com.example.soccermanagement.match.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
+/**
+ * Represents outgoing API data for the match service.
+ */
 public record MatchResponse(
         @Schema(description = "Local match id", example = "44444444-4444-4444-4444-444444444444") UUID id,
         @Schema(description = "External match id from football-data", example = "123456") String externalMatchId,

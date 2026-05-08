@@ -1,18 +1,25 @@
 package com.example.soccermanagement.stadium.infrastructure.persistence;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.util.UUID;
 
+/**
+ * Represents the persistence model stored by the stadium service.
+ */
 @Entity
 @Table(name = "stadiums")
 public class StadiumJpaEntity {
 
     @Id
     private UUID id;
+
+    @Column(nullable = false, unique = true)
     private String name;
+
     private Integer externalVenueId; // external API-Football venue id
     private String city;
     private String country;

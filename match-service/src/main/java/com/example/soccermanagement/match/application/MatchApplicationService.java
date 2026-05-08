@@ -12,12 +12,16 @@ import com.example.soccermanagement.match.application.port.MatchRepository;
 import com.example.soccermanagement.match.application.port.StadiumLookupPort;
 import com.example.soccermanagement.match.application.port.TeamLookupPort;
 import com.example.soccermanagement.match.domain.Match;
+import com.example.soccermanagement.match.infrastructure.integration.LeagueReferenceMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Coordinates application use cases and cross-component workflow for match operations.
+ */
 @Service
 public class MatchApplicationService {
 
@@ -70,21 +74,12 @@ public class MatchApplicationService {
 
     public MatchResponse create(CreateMatchRequest request) {
         try {
-            // parse ids: league may be numeric id (Long) or UUID string - try to handle both
-            java.util.UUID leagueUuid = null;
-            java.util.UUID homeUuid = java.util.UUID.fromString(request.homeTeamId());
-            java.util.UUID awayUuid = java.util.UUID.fromString(request.awayTeamId());
-            java.util.UUID stadiumUuid = java.util.UUID.fromString(request.stadiumId());
-            boolean leagueExists = false;
-            try {
-                // try as UUID
-                leagueUuid = java.util.UUID.fromString(request.leagueId());
-                leagueExists = leagueLookupPort.existsById(leagueUuid);
-            } catch (Exception e) {
-                // not a UUID, try numeric lookup via integration that accepts string id in findByName etc.
-                leagueExists = leagueLookupPort.findByName(request.leagueId()).isPresent();
-            }
-            if (!leagueExists) {
+            UUID leagueUuid = resolveLeagueId(request.leagueId());
+            UUID homeUuid = UUID.fromString(request.homeTeamId());
+            UUID awayUuid = UUID.fromString(request.awayTeamId());
+            UUID stadiumUuid = UUID.fromString(request.stadiumId());
+
+            if (!leagueLookupPort.existsById(leagueUuid)) {
                 throw new com.example.soccermanagement.match.application.exception.RelatedEntityNotFoundException("League not found: " + request.leagueId());
             }
             if (!teamLookupPort.existsById(homeUuid) || !teamLookupPort.existsById(awayUuid)) {
@@ -93,10 +88,12 @@ public class MatchApplicationService {
             if (!stadiumLookupPort.existsById(stadiumUuid)) {
                 throw new com.example.soccermanagement.match.application.exception.RelatedEntityNotFoundException("Stadium not found: " + request.stadiumId());
             }
+            if (repository.existsByLeagueAndTeams(leagueUuid, homeUuid, awayUuid)) {
+                throw new MatchConflictException("Match conflict: duplicate or invalid state");
+            }
 
             try {
-                // create domain match using UUIDs (use leagueUuid if available, else null)
-                Match match = Match.create(leagueUuid != null ? leagueUuid : java.util.UUID.randomUUID(), homeUuid, awayUuid, stadiumUuid);
+                Match match = Match.create(leagueUuid, homeUuid, awayUuid, stadiumUuid);
                 Match saved = repository.save(match);
                 String leagueName = leagueLookupPort.findNameById(saved.getLeagueId()).orElse(null);
                 String externalLeagueCode = leagueLookupPort.findExternalCodeById(saved.getLeagueId()).orElse(null);
@@ -113,6 +110,32 @@ public class MatchApplicationService {
         } catch (ExternalServiceException ex) {
             throw ex; // let AdviceController map to 503
         }
+    }
+
+    private UUID resolveLeagueId(String leagueReference) {
+        if (leagueReference == null || leagueReference.isBlank()) {
+            throw new com.example.soccermanagement.match.application.exception.RelatedEntityNotFoundException("League not found: " + leagueReference);
+        }
+
+        try {
+            UUID leagueUuid = UUID.fromString(leagueReference);
+            if (leagueLookupPort.existsById(leagueUuid)) {
+                return leagueUuid;
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Try alternate formats below.
+        }
+
+        try {
+            long numericId = Long.parseLong(leagueReference.trim());
+            return LeagueReferenceMapper.toInternalUuid(numericId);
+        } catch (NumberFormatException ignored) {
+            // Try a name lookup below.
+        }
+
+        return leagueLookupPort.findByName(leagueReference.trim())
+                .map(com.example.soccermanagement.match.application.dto.LeagueInfo::id)
+                .orElseThrow(() -> new com.example.soccermanagement.match.application.exception.RelatedEntityNotFoundException("League not found: " + leagueReference));
     }
 
     public MatchResponse update(UUID id, UpdateMatchRequest request) {

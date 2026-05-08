@@ -6,6 +6,9 @@ import io.swagger.v3.oas.models.info.Contact;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configures framework or integration components for the shared service.
+ */
 @Configuration
 public class OpenApiConfig {
 

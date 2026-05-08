@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Exposes HTTP endpoints for match operations.
+ */
 @RestController
 @RequestMapping("/api/matches")
 @Tag(name = "Match", description = "Match CRUD, details and import operations")
@@ -72,10 +75,6 @@ public class MatchController {
                 created.add(matchApplicationService.create(request));
             } catch (com.example.soccermanagement.match.application.exception.MatchConflictException ex) {
                 try {
-                    final UUID leagueUuid = request.leagueId() == null || request.leagueId().isBlank()
-                            ? null
-                            : UUID.fromString(request.leagueId());
-
                     final UUID homeUuid = UUID.fromString(request.homeTeamId());
                     final UUID awayUuid = UUID.fromString(request.awayTeamId());
 
@@ -83,7 +82,6 @@ public class MatchController {
                             .filter(match ->
                                     match.homeTeamId().equals(homeUuid)
                                             && match.awayTeamId().equals(awayUuid)
-                                            && (leagueUuid == null || match.leagueId().equals(leagueUuid))
                             )
                             .findFirst();
 

@@ -2,6 +2,9 @@ package com.example.soccermanagement.match.domain;
 
 import java.util.UUID;
 
+/**
+ * Represents core domain behavior and rules for the match service.
+ */
 public class MatchSchedule {
 
     private final UUID id;

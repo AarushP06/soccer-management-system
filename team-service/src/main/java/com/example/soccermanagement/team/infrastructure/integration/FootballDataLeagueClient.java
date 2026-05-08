@@ -10,6 +10,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpStatusCodeException;
 
+/**
+ * Calls downstream or external services needed by the team service.
+ */
 @Component
 public class FootballDataLeagueClient {
     private final RestTemplate restTemplate = new RestTemplate();

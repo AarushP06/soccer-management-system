@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+/**
+ * Loads seed or import data used by the match service.
+ */
 @Component
 public class MatchDataLoader implements CommandLineRunner {
 
@@ -20,7 +23,7 @@ public class MatchDataLoader implements CommandLineRunner {
     public void run(String... args) throws Exception {
         if (matchRepository.findAll().isEmpty()) {
             // Use stable UUIDs and reference the teams and stadiums by the UUIDs seeded in their services
-            UUID leagueId = UUID.fromString("aaaaaaaa-1111-2222-3333-aaaaaaaaaaaa");
+            UUID leagueId = com.example.soccermanagement.match.infrastructure.integration.LeagueReferenceMapper.toInternalUuid(100L);
             UUID homeTeam = UUID.fromString("11111111-1111-1111-1111-111111111111");
             UUID awayTeam = UUID.fromString("22222222-2222-2222-2222-222222222222");
             UUID stadium = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");

@@ -4,6 +4,9 @@ import com.example.soccermanagement.team.domain.exception.DomainException;
 
 import java.util.UUID;
 
+/**
+ * Represents core domain behavior and rules for the team service.
+ */
 public class Team {
 
     private final UUID id;

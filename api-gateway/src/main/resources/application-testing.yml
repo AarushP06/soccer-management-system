@@ -1,0 +1,16 @@
+server:
+  port: 0
+
+spring:
+  main:
+    web-application-type: reactive
+
+services:
+  match:
+    url: http://localhost:8081
+  league:
+    url: http://localhost:8082
+  team:
+    url: http://localhost:8083
+  stadium:
+    url: http://localhost:8084

@@ -3,6 +3,9 @@ package com.example.soccermanagement.match.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
+/**
+ * Summarizes the result of an import or bulk operation in the match service.
+ */
 public record MatchImportSummary(
         @Schema(description = "Competition code used for import", example = "PPL") String competitionCode,
         @Schema(description = "Local stadium id used for imported matches", example = "33333333-3333-3333-3333-333333333333") UUID stadiumId,

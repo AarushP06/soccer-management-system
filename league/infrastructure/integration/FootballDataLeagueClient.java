@@ -4,6 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 // ...existing code...
 
+/**
+ * Calls downstream or external services needed by the application service.
+ */
 @Component
 public class FootballDataLeagueClient {
     // ...existing code...
